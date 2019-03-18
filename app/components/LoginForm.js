@@ -3,6 +3,9 @@ import React from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity} from 'react-native';
 
 export default class RegForm extends React.Component {
+    static navigationOptions ={
+        title: 'Login Screen',
+    };
   render() {
     return (
       <View style={styles.regform}>
@@ -20,6 +23,14 @@ export default class RegForm extends React.Component {
 const styles = StyleSheet.create({
   regform: {
     alignSelf: 'stretch',
+    flex: 1,
+     backgroundColor: '#2a569e',
+     //backgroundGradient: 'vertical',
+     paddingLeft:60,
+     paddingRight:60,
+     alignItems: 'center',
+     justifyContent: 'center',
+
 
   },
   header:{

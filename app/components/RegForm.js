@@ -1,9 +1,14 @@
 import React from 'react';
 
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image} from 'react-native';
+import { Button } from 'native-base';
 
 export default class RegForm extends React.Component {
+    static navigationOptions ={
+        title: 'Registration Screen',
+    };
   render() {
+    const {navigate} = this.props.navigation;
     return (
         
       <View style={styles.regform}>
@@ -15,15 +20,16 @@ export default class RegForm extends React.Component {
         </View>
         
           <Text style={styles.header}>Registration</Text>
+          
 
           
           <TextInput style={styles.textinput} placeholder="Name" placeholderTextColor='#fff'/>
           <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff'/>
           <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff'/>
           <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='#fff'/>
-          <TouchableOpacity style={styles.button}>
+          <Button style={styles.button} onPress={()=> navigate('Second')}>
                 <Text style={styles.btntext}>Register</Text>
-          </TouchableOpacity> 
+          </Button> 
       </View>
     );
   }
@@ -32,6 +38,13 @@ export default class RegForm extends React.Component {
 const styles = StyleSheet.create({
   regform: {
     alignSelf: 'stretch',
+    flex: 1,
+     backgroundColor: '#50031c',
+     //backgroundGradient: 'vertical',
+     paddingLeft:60,
+     paddingRight:60,
+     alignItems: 'center',
+     justifyContent: 'center',
 
   },
   header:{
@@ -60,6 +73,9 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   btntext:{
+      alignItems: 'center',
+      fontSize: 17,
+      justifyContent: 'center',
 
   }
 });
