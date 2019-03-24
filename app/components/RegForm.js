@@ -1,12 +1,64 @@
 import React from 'react';
-
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image} from 'react-native';
+import axios from 'axios';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, AppRegistry} from 'react-native';
 import { Button } from 'native-base';
+
+//var React = require('react-native');
+var FileUpload = require('NativeModules').FileUpload;
+
 
 export default class RegForm extends React.Component {
     static navigationOptions ={
-        title: 'Registration Screen',
+      header:null
+       // title: 'Registration Screen',
     };
+
+  constructor(props){
+    super(props);
+    this.state = { username: '',
+                    password: '',
+                    email: '',
+                    phone: '',
+                  };
+
+   this.register = this.register.bind(this);
+  }
+  
+  register(){
+    let data = {data: this.state}
+    console.log("SJDJKASHFDKAHF");
+    console.log(this.state);
+    axios.post(
+      'http://127.0.0.1:8080/register/seeker',
+      data 
+   ).then(response => {
+      console.log("SUCCESS");
+      console.log(response);
+    }).catch(error => {
+      console.log('a7a')
+      console.log(JSON.stringify(this.state));
+      console.log(error);
+    })
+  }
+  
+  async register2(){
+   try { 
+    let result = await fetch('http://127.0.0.1:8080/register/seeker', {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(this.state),
+    
+  });
+  console.log(result);
+} catch (error) {
+    console.log(error);
+    console.log('aywaaa')
+  };
+}
+  
   render() {
     const {navigate} = this.props.navigation;
     return (
@@ -20,16 +72,34 @@ export default class RegForm extends React.Component {
         </View>
         
           <Text style={styles.header}>Registration</Text>
+        
           
-
-          
-          <TextInput style={styles.textinput} placeholder="Name" placeholderTextColor='#fff'/>
-          <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff'/>
-          <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff'/>
-          <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='#fff'/>
-          <Button style={styles.button} onPress={()=> navigate('Second')}>
+          <TextInput style={styles.textinput} placeholder="Name" placeholderTextColor='#fff'
+            onChangeText={(username) => this.setState({username})}
+            value={this.state.username}
+          />
+          <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff'
+            onChangeText={(email) => this.setState({email})}
+            value={this.state.email}
+          />
+          <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff'
+            onChangeText={(password) => this.setState({password})}
+            value={this.state.password}
+          />
+          <TextInput style={styles.textinput} placeholder="Confirm Password" secureTextEntry={true} placeholderTextColor='#fff'
+            //onChangeText={(password) => this.setState({password})}
+            //value={this.state.password}
+          />
+          <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='#fff'
+            onChangeText={(phone) => this.setState({phone})}
+            value={this.state.phone}
+          />
+          <Button style={styles.button} onPress={() => {this.register2(), navigate('Second')}} >
                 <Text style={styles.btntext}>Register</Text>
           </Button> 
+          {/* <Button style={styles.button} onPress={()=> navigate('Second')}>
+                <Text style={styles.btntext}>Navigate</Text>
+          </Button>  */}
       </View>
     );
   }

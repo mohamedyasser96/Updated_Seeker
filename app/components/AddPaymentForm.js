@@ -39,7 +39,7 @@ export default class AddPaymentForm extends React.Component {
           
           <TextInput style={styles.textinput} placeholder="Card Number" placeholderTextColor='#fff'/>
           <Dropdown 
-                //dropdownOffset={top = 60}
+                dropdownOffset={top = 60}
                 label='Country'
                 baseColor='#fff'
                 placeholderTextColor='#fff'

@@ -1,20 +1,67 @@
 import React from 'react';
+import axios from 'axios';
 
-import { StyleSheet, Text, View, TextInput, TouchableOpacity} from 'react-native';
+import { StyleSheet, Text, View, TextInput} from 'react-native';
+import { Button } from 'native-base';
 
 export default class RegForm extends React.Component {
     static navigationOptions ={
-        title: 'Login Screen',
+      header:null
+       // title: 'Login Screen',
     };
+
+    constructor(props){
+      super(props);
+      this.state = { email: '',
+                      password: '',
+                    };
+  
+     this.register2 = this.register2.bind(this);
+    }
+
+    async register2(){
+      try { 
+       let result = await fetch('http://127.0.0.1:8080/login/seeker', {
+       method: 'POST',
+       headers: {
+         Accept: 'application/json',
+         'Content-Type': 'application/json',
+       },
+       body: JSON.stringify(this.state),
+     });
+     console.log(result);
+   } catch (error) {
+       console.log(error);
+       console.log('aywaa')
+     };
+   }
+
   render() {
+    const {navigate} = this.props.navigation;
     return (
+      <View style={styles.main}>
+        <View style={styles.container}>
       <View style={styles.regform}>
           <Text style={styles.header}>Sign In</Text>
-          <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff'/>
-          <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff'/>
-          <TouchableOpacity style={styles.button}>
-                <Text style={styles.btntext}>Log In</Text>
-          </TouchableOpacity> 
+          <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff'
+            onChangeText={(email) => this.setState({email})}
+            value={this.state.email}
+          />
+          <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff'
+            onChangeText={(password) => this.setState({password})}
+            value={this.state.password}
+          />
+          <Button block large style={styles.button} onPress={() => {this.register2(), navigate('Third')}}>
+            <Text>
+                Login
+            </Text>
+          </Button>
+          {/* <Button block large onPress={()=> navigate('Third')}>
+            <Text> Go to Main </Text>
+          </Button> */}
+      </View>
+
+      </View>
       </View>
     );
   }
@@ -24,7 +71,6 @@ const styles = StyleSheet.create({
   regform: {
     alignSelf: 'stretch',
     flex: 1,
-     backgroundColor: '#2a569e',
      //backgroundGradient: 'vertical',
      paddingLeft:60,
      paddingRight:60,
@@ -40,6 +86,16 @@ const styles = StyleSheet.create({
       marginBottom: 40,
       borderBottomColor: '#fff',
       borderBottomWidth: 5,
+
+  },
+  main:{
+    flex:1
+  },
+  container:{
+    flex:1,
+    justifyContent:'center',
+    alignItems:'center',
+    backgroundColor: '#2a569e',
 
   },
   textinput:{
