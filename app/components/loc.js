@@ -1,6 +1,7 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
+import Modal from "react-native-modal"
 //import Button4 from "../symbols/button4";
 
 import {createStackNavigator, createAppContainer} from 'react-navigation';
@@ -13,22 +14,48 @@ import { Button } from 'native-base';
 
 
 export default class loc extends React.Component {
+  _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('token');
+      if (value !== null) {
+        // We have data!!
+        console.log("okoko", value);
+        return value
+      }
+    } catch (error) {
+      // Error retrieving data
+    }
+  };
     constructor(props){
         super(props);
         this.state = {
             latitude: 0,
             longitude: 0,
-            error: null
+            isModalVisible: false,
+            error: null,
+            // token: null,
+            map:{
+              lat: 0,
+              lon: 0,
+              numberofproviders: 1
+            },
+            providername: ''
         };
+        
+
+        
+        // this.state.token = this._retrieveData()        
         //this.getUserLocation = this.getUserLocation.bind(this);
     }
+    _toggleModal = () => 
+        this.setState({ isModalVisible: !this.state.isModalVisible})
      componentDidMount() {
          navigator.geolocation.getCurrentPosition(position => {
              this.setState({
                  latitude: position.coords.latitude,
                  longitude: position.coords.longitude,
                  error: null
-             }), console.log("A7a");
+             }), console.log("Hey");
          }, error => this.setState({ error: error.message}),
          { enableHighAccuracy: true, timeout: 20000, maximumAge: 2000}
          );
@@ -38,12 +65,56 @@ export default class loc extends React.Component {
         header:null
          // title: 'Registration Screen',
       };
+   
+  async postloc(){
+        try { 
+        // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
+        let token = await AsyncStorage.getItem('token')
+        let result = await fetch('http://127.0.0.1:8080/findProviders', {
+         method: 'POST',
+         withCredentials: true,
+         headers: {
+           Accept: 'application/json',
+           'Content-Type': 'application/json',
+           'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(this.state.map),
+          
+          
+        });
+        // console.log('HEADERS: ', headers)
+       console.log('RESULTTTTTT', result);
+       this.state.providername = result._bodyInit;
+       var temp = result._bodyInit;
+       var ind = temp.indexOf("=")
+       var first_half = temp.slice(ind+1, ind + temp.length)
+       console.log(first_half)
+       var ind_equal = first_half.indexOf("=")
+       var lati = first_half.slice(0, ind_equal)
+       var longi = first_half.slice(ind_equal+1, first_half.length-1)
+       console.log("JDSHDK", lati, longi)
+  
+       this.provs = {
+         latitude: parseFloat(lati),
+         longitude : parseFloat(longi)
+       }
+       console.log(this.provs)
+       
+       //this.checkStatus(result.status, result._bodyInit)
+     } catch (error) {
+         console.log(error);
+         console.log('aywaaa')
+       };
+     }
    getUserLocation = () => {
      console.log('Pressed the button')
      navigator.geolocation.getCurrentPosition(position => {
        //this.state.latitude=position["coords"]["latitude"];
         console.log(position["coords"]["latitude"]);
         console.log(position["coords"]["longitude"]);
+        this.state.map.lat = position["coords"]["latitude"];
+        this.state.map.lon = position["coords"]["longitude"];
+        this.postloc()
        //this.state.longitude = position["coords"]["longitude"];
      }, err => console.log(err));
 
@@ -52,6 +123,7 @@ export default class loc extends React.Component {
     const {navigate} = this.props.navigation;
      return (
        <View style={styles.container}>
+
        <MapView
               style={styles.map}
               region={{
@@ -61,10 +133,20 @@ export default class loc extends React.Component {
                 longitudeDelta: 0.0121,
               }}>
               <Marker coordinate={this.state} />
+              <Marker coordinate={this.provs} pinColor='#417df4'/>
         </MapView>
+        <Modal isVisible={this.state.isModalVisible}>
+          <View style={{ flex: 1 }}>
+
+            <Text>{this.state.providername}</Text>
+            <Button large block style={styles.button} onPress={() => {this._toggleModal(), navigate('Pay')}} >
+              <Text>PAY</Text>
+            </Button>
+          </View>
+        </Modal>
         <FetchLocation onGetLocation={this.getUserLocation} />
         
-          <Button large block style={styles.button} ><Text>REQUEST</Text></Button>
+          <Button full success style={styles.button} onPress={this._toggleModal} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
        </View>
      );
    }
@@ -89,7 +171,7 @@ export default class loc extends React.Component {
     alignItems: 'center',
     padding: 10,
     paddingBottom: 10,
-    backgroundColor: '#1990e5',
+    //backgroundColor: '#1990e5',
     marginTop: 30,
     top: "95%",
     //left: 148.53
@@ -99,6 +181,7 @@ export default class loc extends React.Component {
       fontSize: 17,
       justifyContent: 'center',
       left: 148.53,
+      backgroundColor: '#ffffff',
       //colo
 
   },

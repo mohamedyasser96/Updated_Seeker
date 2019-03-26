@@ -25,7 +25,7 @@ export default class RegForm extends React.Component {
                 <Text style={styles.btntext}>Register As Seeker</Text>
           </Button> 
           <Button block large style={styles.button} onPress={()=> navigate('Second')}>
-                <Text style={styles.btntext}>Register As Provider</Text>
+                <Text style={styles.btntext}>Log In</Text>
           </Button> 
       </View>
     );

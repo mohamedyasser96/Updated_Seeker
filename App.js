@@ -6,6 +6,7 @@ import {createStackNavigator, createAppContainer} from 'react-navigation';
 import Regform from "./app/components/RegForm"
 import Logform from "./app/components/LoginForm"
 import AddPform from "./app/components/AddPaymentForm"
+import NewPay from "./app/components/NewPay"
 
 import FirstScreen from "./app/components/RegForm"
 import SecondScreen from "./app/components/LoginForm"
@@ -19,7 +20,8 @@ import FetchLocation from "./app/components/FetchLocation"
     Main:{screen: Main},
     First: {screen:  FirstScreen},
     Second: {screen: SecondScreen},
-    Third: {screen: locScreen}
+    Third: {screen: locScreen},
+    Pay: {screen: AddPform}
   });
 
   const App = createAppContainer(MainNavigator);
@@ -28,19 +30,18 @@ import FetchLocation from "./app/components/FetchLocation"
 
 
 
-// export default class App extends React.Component {
-//    getUserLocation = () => {
-//      console.log('Pressed the button')
-//      navigator.geolocation.getCurrentPosition(position => {
-//        console.log(position);
-//      }, err => console.log(err));
+//  export default class App extends React.Component {
+//     getUserLocation = () => {
+//       console.log('Pressed the button')
+//       navigator.geolocation.getCurrentPosition(position => {
+//         console.log(position);
+//       }, err => console.log(err));
 
 //    }
 //    render() {
 //      return (
 //        <View style={styles.container}>
 //          <AddPform></AddPform>
-//          {/* <FetchLocation onGetLocation={this.getUserLocation} /> */}
 //        </View>
 //      );
 //    }

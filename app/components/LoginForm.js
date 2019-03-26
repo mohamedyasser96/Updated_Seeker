@@ -1,8 +1,11 @@
 import React from 'react';
 import axios from 'axios';
 
-import { StyleSheet, Text, View, TextInput} from 'react-native';
+import { Alert,StyleSheet, Text, View, TextInput, AsyncStorage} from 'react-native';
 import { Button } from 'native-base';
+
+
+  
 
 export default class RegForm extends React.Component {
     static navigationOptions ={
@@ -15,11 +18,52 @@ export default class RegForm extends React.Component {
       this.state = { email: '',
                       password: '',
                     };
-  
      this.register2 = this.register2.bind(this);
     }
+  showAlert (message) 
+  {
+    Alert.alert(
+      'It seems something went wrong',
+      message,
+      [
+        
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ],
+      {cancelable: false},
+    );
+  }
+    checkStatus (token, message)
+    {
+      if(token == null){
+        console.log("HHEEYYYY")
+        this.showAlert(message)
+      }
 
-    async register2(){
+      else{
+        this._storeData(token)
+
+        
+      }
+    }
+
+    _storeData = async(token) => { 
+      try{
+      //console.log("Ana fl try")
+      await AsyncStorage.setItem('token', token)
+      this.props.navigation.navigate("Third")
+      
+    }
+    catch(error){
+      console.log("Problem saving token")
+    }
+    }
+    async register2()
+    {
       try { 
        let result = await fetch('http://127.0.0.1:8080/login/seeker', {
        method: 'POST',
@@ -29,13 +73,19 @@ export default class RegForm extends React.Component {
        },
        body: JSON.stringify(this.state),
      });
-     console.log(result);
+     
+     body = JSON.parse(result._bodyInit)
+     console.log(body.Status)
+     
+     token = body.Token
+     this.checkStatus(token, body.Status);
    } catch (error) {
        console.log(error);
        console.log('aywaa')
      };
    }
 
+   
   render() {
     const {navigate} = this.props.navigation;
     return (
@@ -51,7 +101,7 @@ export default class RegForm extends React.Component {
             onChangeText={(password) => this.setState({password})}
             value={this.state.password}
           />
-          <Button block large style={styles.button} onPress={() => {this.register2(), navigate('Third')}}>
+          <Button block large style={styles.button} onPress={() => {this.register2()}}>
             <Text>
                 Login
             </Text>

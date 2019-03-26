@@ -1,6 +1,6 @@
 import React from 'react';
 import axios from 'axios';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, AppRegistry} from 'react-native';
+import { Alert, StyleSheet, Text, View, TextInput, TouchableOpacity, Image, AppRegistry} from 'react-native';
 import { Button } from 'native-base';
 
 //var React = require('react-native');
@@ -12,6 +12,34 @@ export default class RegForm extends React.Component {
       header:null
        // title: 'Registration Screen',
     };
+    showAlert (message) 
+    {
+      Alert.alert(
+        'It seems something went wrong',
+        message,
+        [
+          
+          {
+            text: 'Cancel',
+            onPress: () => console.log('Cancel Pressed'),
+            style: 'cancel',
+          },
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        {cancelable: false},
+      );
+    }
+    checkStatus (token, message){
+      if(token == 406){
+        console.log("HHEEYYYY")
+        this.showAlert(message)
+      }
+
+      else{
+        this.props.navigation.navigate("Second")
+        
+      }
+    }
 
   constructor(props){
     super(props);
@@ -32,8 +60,9 @@ export default class RegForm extends React.Component {
       'http://127.0.0.1:8080/register/seeker',
       data 
    ).then(response => {
-      console.log("SUCCESS");
-      console.log(response);
+      console.log("SUCCESS")
+      console.log(response.status)
+      this.checkStatus(response.status)
     }).catch(error => {
       console.log('a7a')
       console.log(JSON.stringify(this.state));
@@ -51,8 +80,10 @@ export default class RegForm extends React.Component {
     },
     body: JSON.stringify(this.state),
     
+    
   });
   console.log(result);
+  this.checkStatus(result.status, result._bodyInit)
 } catch (error) {
     console.log(error);
     console.log('aywaaa')
@@ -94,7 +125,7 @@ export default class RegForm extends React.Component {
             onChangeText={(phone) => this.setState({phone})}
             value={this.state.phone}
           />
-          <Button style={styles.button} onPress={() => {this.register2(), navigate('Second')}} >
+          <Button style={styles.button} onPress={() => {this.register2()}} >
                 <Text style={styles.btntext}>Register</Text>
           </Button> 
           {/* <Button style={styles.button} onPress={()=> navigate('Second')}>
