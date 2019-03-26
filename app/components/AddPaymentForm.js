@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 
 import { NetworkInfo } from 'react-native-network-info';
 
-import { StyleSheet, Text, View, TextInput, Image, AsyncStorage} from 'react-native';
+import { Alert, StyleSheet, Text, View, TextInput, Image, AsyncStorage} from 'react-native';
 
 import { Button } from 'native-base';
 
@@ -33,7 +33,39 @@ export default class AddPaymentForm extends React.Component {
       // Error retrieving data
     }
   };
+  showAlert (message) 
+  {
+    Alert.alert(
+      'Payment is: ',
+      message,
+      [
+        
+        {
+          text: 'Cancel',
+          onPress: () => console.log('Cancel Pressed'),
+          style: 'cancel',
+        },
+        {text: 'OK', onPress: () => console.log('OK Pressed')},
+      ],
+      {cancelable: false},
+    );
+  }
+    checkStatus (mes)
+    {
+      if(mes === "true"){
+        console.log("HHEEYYYY")
+        message = "Successful"
+        this.showAlert(message)
+      }
 
+      else{
+        console.log("This is mes: ", mes)
+        message = "Unsuccessful, please try again!"
+        this.showAlert(message)
+
+        
+      }
+    }
   setData (){
     DataObject = {
       card:{
@@ -129,7 +161,14 @@ export default class AddPaymentForm extends React.Component {
        body: JSON.stringify(this.DataObject),
      });
 
-     console.log(result);
+     //console.log(result.ok);
+
+     body = JSON.parse(result._bodyInit)
+     console.log(body.success)
+     //console.log(body.ok)
+     
+     //token = body.Token
+     this.checkStatus(body.success.toString());
 
     //  console.log(result);
     //  console.log(this.DataObject)
@@ -288,8 +327,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: '#d8d6d7',
     marginTop: 30,
+    paddingBottom: 20
   },
   linearGradient: {
     flex: 1,

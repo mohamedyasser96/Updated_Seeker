@@ -39,7 +39,8 @@ export default class loc extends React.Component {
               lon: 0,
               numberofproviders: 1
             },
-            providername: ''
+            providername: '',
+            amount: '100 EGP'
         };
         
 
@@ -90,6 +91,11 @@ export default class loc extends React.Component {
        var first_half = temp.slice(ind+1, ind + temp.length)
        console.log(first_half)
        var ind_equal = first_half.indexOf("=")
+       var ind_fs = temp.indexOf("[")
+       var ind_sc = temp.indexOf("@")
+       var ProviderName = temp.slice(ind_fs+1, ind_sc)
+       console.log(ProviderName)
+       this.state.providername = "The Nearest Provider is : " + ProviderName
        var lati = first_half.slice(0, ind_equal)
        var longi = first_half.slice(ind_equal+1, first_half.length-1)
        console.log("JDSHDK", lati, longi)
@@ -138,9 +144,13 @@ export default class loc extends React.Component {
         <Modal isVisible={this.state.isModalVisible}>
           <View style={{ flex: 1 }}>
 
-            <Text>{this.state.providername}</Text>
-            <Button large block style={styles.button} onPress={() => {this._toggleModal(), navigate('Pay')}} >
+            <Text style={styles.text}>{this.state.providername}</Text>
+            <Text style={styles.text}>Price is : {this.state.amount}</Text>
+            <Button full success style={styles.button} onPress={() => {this._toggleModal(), navigate('Pay')}} >
               <Text>PAY</Text>
+            </Button>
+            <Button full danger style={styles.button} onPress={() => {this._toggleModal()}} >
+              <Text>Cancel </Text>
             </Button>
           </View>
         </Modal>
@@ -166,6 +176,12 @@ export default class loc extends React.Component {
     ...StyleSheet.absoluteFillObject,
     height: 630,
   },
+  text:{
+    top: "30%",
+    fontWeight: "bold",
+    color: "#ffffff"
+  },
+
   button:{
     alignSelf: 'stretch',
     alignItems: 'center',
