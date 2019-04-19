@@ -52,7 +52,7 @@ export default class App extends Component {
     
     async register2(){
      try { 
-      let result = await fetch('http://127.0.0.1:8080/register/provider', {
+      let result = await fetch('http://127.0.0.1:8080/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -117,7 +117,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     position: "absolute",
-    backgroundColor: "rgba(29,72,125,1)",
+    backgroundColor: "rgba(2, 84, 3,1)",
     opacity: 1
   },
   button7: {

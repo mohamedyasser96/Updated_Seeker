@@ -2,16 +2,30 @@ import React from 'react';
 import { StyleSheet, Text, View, AsyncStorage } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal"
+//import Button4 from "../symbols/button4";
 
-import EventSource from 'react-native-event-source';
-import Dialog, { DialogContent } from 'react-native-popup-dialog';
+import {createStackNavigator, createAppContainer} from 'react-navigation';
 
+
+
+import FetchLocation from "./fetchlocation"
 import { Button } from 'native-base';
 
 
 
 export default class loc extends React.Component {
- 
+  _retrieveData = async () => {
+    try {
+      const value = await AsyncStorage.getItem('token');
+      if (value !== null) {
+        // We have data!!
+        console.log("okoko", value);
+        return value
+      }
+    } catch (error) {
+      // Error retrieving data
+    }
+  };
     constructor(props){
         super(props);
         this.state = {
@@ -46,42 +60,73 @@ export default class loc extends React.Component {
          }, error => this.setState({ error: error.message}),
          { enableHighAccuracy: true, timeout: 20000, maximumAge: 2000}
          );
-         
-
-
-          this.eventSource = new EventSource('http://localhost:8080/notification', {headers: {
-           Accept: 'application/json',
-           'Content-Type': 'application/json',
-           'Authorization': 'Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc3NlckBlbWFpbC5jb20iLCJhdWQiOiIyIiwiaWF0IjoxNTU0OTIyMjg3LCJleHAiOjE1NTQ5MjU4ODd9.iiRKwNmdoEUDhwhsT9B-3kqgEHEFLsY9G1J4KcbyEeo'
-          }})
-          this.eventSource.addEventListener('message', (data) => {
-            console.log(data.type); // message
-            console.log(data.data)
-            this.setState({
-              dataz:data.data
-            })
-            
-            this.togglePopup(true)
-          });
      }
-
-     togglePopup(pop) {
-      console.log('before', this.state.popup)
-      this.setState({
-        popup: pop
-      });
-      console.log('after', this.state.popup)
-    }
 
     static navigationOptions ={
         header:null
          // title: 'Registration Screen',
       };
    
+  async postloc(){
+        try { 
+        // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
+        let token = await AsyncStorage.getItem('token')
+        let result = await fetch('http://127.0.0.1:8080/findProviders', {
+         method: 'POST',
+         withCredentials: true,
+         headers: {
+           Accept: 'application/json',
+           'Content-Type': 'application/json',
+           'Authorization': 'Bearer ' + token
+          },
+          body: JSON.stringify(this.state.map),
+          
+          
+        });
+        // console.log('HEADERS: ', headers)
+       console.log('RESULTTTTTT', result);
+       this.state.providername = result._bodyInit;
+       var temp = result._bodyInit;
+       var ind = temp.indexOf("=")
+       var first_half = temp.slice(ind+1, ind + temp.length)
+       console.log(first_half)
+       var ind_equal = first_half.indexOf("=")
+       var ind_fs = temp.indexOf("[")
+       var ind_sc = temp.indexOf("@")
+       var ProviderName = temp.slice(ind_fs+1, ind_sc)
+       console.log(ProviderName)
+       this.state.providername = "The Nearest Provider is : " + ProviderName
+       var lati = first_half.slice(0, ind_equal)
+       var longi = first_half.slice(ind_equal+1, first_half.length-1)
+       console.log("JDSHDK", lati, longi)
   
+       this.provs = {
+         latitude: parseFloat(lati),
+         longitude : parseFloat(longi)
+       }
+       console.log(this.provs)
+       
+       //this.checkStatus(result.status, result._bodyInit)
+     } catch (error) {
+         console.log(error);
+         console.log('aywaaa')
+       };
+     }
+   getUserLocation = () => {
+     console.log('Pressed the button')
+     navigator.geolocation.getCurrentPosition(position => {
+       //this.state.latitude=position["coords"]["latitude"];
+        console.log(position["coords"]["latitude"]);
+        console.log(position["coords"]["longitude"]);
+        this.state.map.lat = position["coords"]["latitude"];
+        this.state.map.lon = position["coords"]["longitude"];
+        this.postloc()
+       //this.state.longitude = position["coords"]["longitude"];
+     }, err => console.log(err));
+
+   }
    render() {
-    //const {navigate} = this.props.navigation;
-    if(!this.state.popup) {
+    const {navigate} = this.props.navigation;
      return (
        <View style={styles.container}>
 
@@ -101,7 +146,7 @@ export default class loc extends React.Component {
 
             <Text style={styles.text}>{this.state.providername}</Text>
             <Text style={styles.text}>Price is : {this.state.amount}</Text>
-            <Button full success style={styles.button} onPress={() => {this._toggleModal()}} >
+            <Button full success style={styles.button} onPress={() => {this._toggleModal(), navigate('Pay')}} >
               <Text>PAY</Text>
             </Button>
             <Button full danger style={styles.button} onPress={() => {this._toggleModal()}} >
@@ -109,32 +154,11 @@ export default class loc extends React.Component {
             </Button>
           </View>
         </Modal>
-        {/* <FetchLocation onGetLocation={this.getUserLocation} /> */}
+        <FetchLocation onGetLocation={this.getUserLocation} />
         
-          {/* <Button full success style={styles.button} onPress={this._toggleModal} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button> */}
+          <Button full success style={styles.button} onPress={this._toggleModal} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
        </View>
      );
-            }
-            else {
-              console.log(this.state.popup)
-              return (
-                <View style={styles.container}>
-                  <Dialog visible={this.state.popup}
-                    onTouchOutside={() => {
-                        this.setState({popup:false})
-                      }}>
-                    <DialogContent>
-                      <Text> REQUEST AVAILABLE </Text>
-                      <Button title="Close"
-                        onPress = {() => {
-                          this.setState({popup:false})
-                        }}/>
-                    </DialogContent>
-                  </Dialog>         
-                </View>
-              );
-            }
-          
    }
 }
 

@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Center } from "@builderx/utils";
 import Button7 from "../symbols/button7";
 import Button9 from "../symbols/button9";
-import { Alert, View, StyleSheet, Text, Image, AppRegistry} from "react-native";
+import { Alert, View, StyleSheet, Text, Image, AppRegistry, AsyncStorage} from "react-native";
 import { Button } from 'native-base';
 import { TextInput } from 'react-native-gesture-handler';
 
@@ -55,7 +55,7 @@ export default class App extends Component {
         try{
         //console.log("Ana fl try")
         await AsyncStorage.setItem('token', token)
-        //this.props.navigation.navigate("Third")
+        this.props.navigation.navigate("Main")
         
       }
       catch(error){
@@ -65,7 +65,7 @@ export default class App extends Component {
       async register2()
       {
         try { 
-         let result = await fetch('http://127.0.0.1:8080/login/provider', {
+         let result = await fetch('http://127.0.0.1:8080/login/seeker', {
          method: 'POST',
          headers: {
            Accept: 'application/json',
@@ -93,7 +93,7 @@ export default class App extends Component {
     return (
       <View style={styles.root}>
         <View style={styles.rect} />
-        <Text style={styles.text}>CocoaBeans</Text>
+        <Text style={styles.text}>CocoaBeans' Seeker</Text>
         <Center horizontal>
           <Image source={require("./3.png")} style={styles.image} />
         </Center>
@@ -110,10 +110,10 @@ export default class App extends Component {
             <Text style={styles.bcont2}>Login</Text>
           </Button>
         </Center>
-        <Button style={styles.button9} onPress={() => {navigate('Main')}}>
+        <Button style={styles.button9} onPress={() => {navigate('Second')}}>
             <Text style={styles.buttonContent}>Click Here</Text>
         </Button> 
-        <Text style={styles.text2}>Not a provider? </Text>
+        <Text style={styles.text2}>Not a User? </Text>
       </View>
     );
   }
@@ -129,7 +129,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     position: "absolute",
-    backgroundColor: "rgba(29,72,125,1)",
+    backgroundColor: "rgba(2,84,3,1)",
     opacity: 1
   },
   Broot: {
