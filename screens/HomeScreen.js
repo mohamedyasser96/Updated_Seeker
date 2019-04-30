@@ -1,9 +1,10 @@
 import React from 'react';
-import { StyleSheet, Text, View, AsyncStorage, Alert } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage, Alert, Picker } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal"
 import EventSource from "react-native-event-source";
 import { FlatGrid } from 'react-native-super-grid';
+import { Dropdown } from 'react-native-material-dropdown';
 
 //import Button4 from "../symbols/button4";
 
@@ -36,6 +37,7 @@ export default class loc extends React.Component {
             longitude: 31.0,
             isModalVisible: false,
             error: null,
+            expertLevel: '',
             // token: null,
             map:{
               lat: 0,
@@ -55,6 +57,7 @@ export default class loc extends React.Component {
     }
 
     async triggerAlert(providers) {
+
       var my_provs = []
       var sex = providers
       console.log("TRIGEER", providers);
@@ -91,7 +94,7 @@ export default class loc extends React.Component {
       //  this.acceptProvider = this.acceptProvider.bind(this);
        console.log("Inside here")
        this.global_ind = -1;
-      this.eventSource = new EventSource("http://192.168.43.73:8080/notifySeeker", {
+      this.eventSource = new EventSource("http://10.7.126.227:8080/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -107,6 +110,7 @@ export default class loc extends React.Component {
         console.log(data.type); // message
         var res_str = data.data.slice(1); 
         var res_json = JSON.parse(res_str);
+        console.log("This IS RES JSON", res_json)
         var provs = res_json["providers"];
         console.log("type j", typeof(res_json));
         console.log("type pr", typeof(provs));
@@ -135,7 +139,7 @@ export default class loc extends React.Component {
       console.log("emaail", emails);
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      fetch("http://192.168.43.73:8080/acceptProviders", {
+      fetch("http://10.7.126.227:8080/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -166,8 +170,16 @@ export default class loc extends React.Component {
   async postloc(){
         try { 
         // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
+        navigator.geolocation.getCurrentPosition(position => {
+           console.log(position["coords"]["latitude"]);
+           console.log(position["coords"]["longitude"]);
+           this.state.latitude = position["coords"]["latitude"];
+           this.state.longitude = position["coords"]["longitude"];
+           this.state.map.lat = position["coords"]["latitude"];
+           this.state.map.lon = position["coords"]["longitude"];
+        }, err => console.log(err));
         let token = await AsyncStorage.getItem('token')
-        fetch("http://192.168.43.73:8080/findProviders", {
+        fetch("http://10.7.126.227:8080/findProviders", {
           method: "POST",
           headers: {
             Accept: "application/json",
@@ -175,10 +187,10 @@ export default class loc extends React.Component {
             Authorization: "Bearer " + token
           },
           body: JSON.stringify({
-            lat: "30.1",
-            lon: "31.0",
+            lat: this.state.latitude,
+            lon: this.state.longitude,
             num_providers: 2,
-            expertLevel: 2
+            expertLevel: this.state.expertLevel
           })
         })
           .then(response => response.text())
@@ -218,22 +230,29 @@ export default class loc extends React.Component {
          console.log('aywaaa')
        };
      }
-   getUserLocation = () => {
-     console.log('Pressed the button')
-     navigator.geolocation.getCurrentPosition(position => {
-       //this.state.latitude=position["coords"]["latitude"];
-        console.log(position["coords"]["latitude"]);
-        console.log(position["coords"]["longitude"]);
-        // this.state.map.lat = position["coords"]["latitude"];
-        // this.state.map.lon = position["coords"]["longitude"];
-        this.state.map.lat = 30.1;
-        this.state.map.lon = 31.0;
-        this.postloc()
-       //this.state.longitude = position["coords"]["longitude"];
-     }, err => console.log(err));
+  //  getUserLocation = () => {
+  //    console.log('Pressed the button')
+  //    navigator.geolocation.getCurrentPosition(position => {
+  //      //this.state.latitude=position["coords"]["latitude"];
+  //       console.log(position["coords"]["latitude"]);
+  //       console.log(position["coords"]["longitude"]);
+  //       // this.state.map.lat = position["coords"]["latitude"];
+  //       // this.state.map.lon = position["coords"]["longitude"];
+  //       this.state.map.lat = 30.1;
+  //       this.state.map.lon = 31.0;
+  //       this.postloc()
+  //      //this.state.longitude = position["coords"]["longitude"];
+  //    }, err => console.log(err));
 
-   }
+  //  }
    render() {
+    let data = [{
+      value: '1',
+    }, {
+      value: '2',
+    }, {
+      value: '3',
+    }];
     const {navigate} = this.props.navigation;
     const items = [
       'TURQUOISE', 'EMERALD',
@@ -283,9 +302,27 @@ export default class loc extends React.Component {
             </Button>
           </View>
         </Modal>
-        <FetchLocation onGetLocation={this.getUserLocation} />
-        
-          <Button full success style={styles.button} onPress={this._toggleModal} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
+        {/* <FetchLocation onGetLocation={this.getUserLocation} /> */}
+        {/* <Dropdown 
+                //dropdownOffset={top = 60}
+                style={styles.dd}
+                label='Expert Level'
+                baseColor='black'
+                placeholderTextColor='black'
+                data={data}
+           /> */}
+           <Text style={{fontSize: 20, color: 'black', top: 70}}>Expert Level</Text>
+           <Picker
+              selectedValue={this.state.expertLevel}
+              style={{height: 50, width: 100, paddingTop: 5, top: 75}}
+              onValueChange={(itemValue, itemIndex) =>
+                this.setState({expertLevel: itemValue})
+              }>
+              <Picker.Item label="1" value = "1" />
+              <Picker.Item label="2" value = "2" />
+              <Picker.Item label="3" value = "3" />
+            </Picker>
+          <Button full success style={styles.button} onPress={() => {this.postloc()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
        </View>
      );
    }
@@ -330,6 +367,16 @@ export default class loc extends React.Component {
     fontSize: 12,
     color: '#fff',
   },
+  dd:{
+    alignSelf: 'stretch',
+    alignItems: 'center',
+    padding: 10,
+    paddingBottom: 10,
+    //backgroundColor: '#1990e5',
+    //marginTop: 30,
+    top: "80%",
+    //left: 148.53
+  },
   button:{
     alignSelf: 'stretch',
     alignItems: 'center',
@@ -337,7 +384,7 @@ export default class loc extends React.Component {
     paddingBottom: 10,
     //backgroundColor: '#1990e5',
     marginTop: 30,
-    top: "95%",
+    top: "70%",
     //left: 148.53
   },
   btntext:{
