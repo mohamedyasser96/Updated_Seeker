@@ -65,7 +65,7 @@ export default class App extends Component {
       async register2()
       {
         try { 
-         let result = await fetch('http://127.0.0.1:8080/login/seeker', {
+         let result = await fetch('http://192.168.1.3:8080/login/seeker', {
          method: 'POST',
          headers: {
            Accept: 'application/json',
@@ -93,9 +93,9 @@ export default class App extends Component {
     return (
       <View style={styles.root}>
         <View style={styles.rect} />
-        <Text style={styles.text}>CocoaBeans' Seeker</Text>
+        {/* <Text style={styles.text}>CocoaBeans' Seeker</Text> */}
         <Center horizontal>
-          <Image source={require("./3.png")} style={styles.image} />
+          <Image source={require("./2.png")} style={styles.image} />
         </Center>
         {/* <Center horizontal> */}
           <TextInput style={styles.input} placeholder="Email" placeholderTextColor='#fff' onChangeText={(email) => this.setState({email})}
@@ -175,7 +175,8 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     marginLeft: 40,
-    marginRight:60
+    marginRight:60,
+    color: 'white'
   },
   input2: {
     //position: "absolute",
@@ -186,7 +187,8 @@ const styles = StyleSheet.create({
     justifyContent:'center',
     alignItems:'center',
     marginLeft: 40,
-    marginRight:60
+    marginRight:60,
+    color: 'white'
   },
   button7: {
     top: 679,

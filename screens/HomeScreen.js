@@ -1,14 +1,17 @@
 import React from 'react';
-import { StyleSheet, Text, View, AsyncStorage } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage, Alert } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal"
+import EventSource from "react-native-event-source";
+import { FlatGrid } from 'react-native-super-grid';
+
 //import Button4 from "../symbols/button4";
 
 import {createStackNavigator, createAppContainer} from 'react-navigation';
 
 
 
-import FetchLocation from "./fetchlocation"
+import FetchLocation from "../app/components/FetchLocation"
 import { Button } from 'native-base';
 
 
@@ -29,18 +32,20 @@ export default class loc extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            latitude: 0,
-            longitude: 0,
+            latitude: 30.1,
+            longitude: 31.0,
             isModalVisible: false,
             error: null,
             // token: null,
             map:{
               lat: 0,
               lon: 0,
-              numberofproviders: 1
+              numberofproviders: 2
             },
             providername: '',
-            amount: '100 EGP'
+            amount: '100 EGP',
+            tot_provs: ['henna', 'asser', 'hamada'],
+            itemcolor: 'blue'
         };
         
 
@@ -48,9 +53,67 @@ export default class loc extends React.Component {
         // this.state.token = this._retrieveData()        
         //this.getUserLocation = this.getUserLocation.bind(this);
     }
+
+    async triggerAlert(providers) {
+      var my_provs = []
+      var sex = providers
+      console.log("TRIGEER", providers);
+      for (let i = 0; i < providers.length; i++) {
+        console.log(i);
+        console.log(sex[i])
+         var obj = await { 
+          text: providers[i],
+          onPress: () => this.acceptProvider(sex[i])
+        };
+        my_provs.push(obj);
+     }
+     this.state.tot_provs = providers
+    //  my_provs.push({text: "Cancel",
+    //                 onPress: () => console.log("Cancel")
+    //               });
+      // Alert.alert(
+      //   'Providers available',
+      //   "Please pick a provider",
+      //   my_provs,
+      //   {cancelable: false},
+      // );
+      console.log(this.state.tot_provs),
+      this._toggleModal()
+      console.log(this.state)
+
+    }
+
+
     _toggleModal = () => 
         this.setState({ isModalVisible: !this.state.isModalVisible})
+
      componentDidMount() {
+      //  this.acceptProvider = this.acceptProvider.bind(this);
+       console.log("Inside here")
+       this.global_ind = -1;
+      this.eventSource = new EventSource("http://192.168.43.73:8080/notifySeeker", {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+      this.eventSource.addEventListener("close", data => {
+        console.log(data.type); // message
+        console.log("DATAAA", data);
+      });
+
+      this.eventSource.addEventListener("message", data => {
+        console.log(data.type); // message
+        var res_str = data.data.slice(1); 
+        var res_json = JSON.parse(res_str);
+        var provs = res_json["providers"];
+        console.log("type j", typeof(res_json));
+        console.log("type pr", typeof(provs));
+  
+        this.triggerAlert(provs);
+      });
+
          navigator.geolocation.getCurrentPosition(position => {
              this.setState({
                  latitude: position.coords.latitude,
@@ -66,45 +129,88 @@ export default class loc extends React.Component {
         header:null
          // title: 'Registration Screen',
       };
-   
+
+    async acceptProvider(emails) {
+      // var emails = "asser1@email.com"
+      console.log("emaail", emails);
+      // console.log("ind", this.global_ind);
+      let token = await AsyncStorage.getItem("token");
+      fetch("http://192.168.43.73:8080/acceptProviders", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify({
+          providerEmail: emails
+        })
+      })
+        .then(response => response.text())
+        .then(responseJson => {
+          console.log(responseJson);
+          Alert.alert(
+            'Success',
+            'Provider Henna@email.com on the way',
+            [
+              {text: 'OK', onPress: () => console.log('OK Pressed')},
+            ],
+            {cancelable: false},
+          );
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+  
   async postloc(){
         try { 
         // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
         let token = await AsyncStorage.getItem('token')
-        let result = await fetch('http://127.0.0.1:8080/findProviders', {
-         method: 'POST',
-         withCredentials: true,
-         headers: {
-           Accept: 'application/json',
-           'Content-Type': 'application/json',
-           'Authorization': 'Bearer ' + token
+        fetch("http://192.168.43.73:8080/findProviders", {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + token
           },
-          body: JSON.stringify(this.state.map),
-          
-          
+          body: JSON.stringify({
+            lat: "30.1",
+            lon: "31.0",
+            num_providers: 2,
+            expertLevel: 2
+          })
+        })
+          .then(response => response.text())
+          .then(responseJson => {
+            console.log(responseJson);
+          })
+          .catch(error => {
+            console.error(error);
         });
-        // console.log('HEADERS: ', headers)
-       console.log('RESULTTTTTT', result);
-       this.state.providername = result._bodyInit;
-       var temp = result._bodyInit;
-       var ind = temp.indexOf("=")
-       var first_half = temp.slice(ind+1, ind + temp.length)
-       console.log(first_half)
-       var ind_equal = first_half.indexOf("=")
-       var ind_fs = temp.indexOf("[")
-       var ind_sc = temp.indexOf("@")
-       var ProviderName = temp.slice(ind_fs+1, ind_sc)
-       console.log(ProviderName)
-       this.state.providername = "The Nearest Provider is : " + ProviderName
-       var lati = first_half.slice(0, ind_equal)
-       var longi = first_half.slice(ind_equal+1, first_half.length-1)
-       console.log("JDSHDK", lati, longi)
+      //   console.log(body);
+      //   // console.log('HEADERS: ', headers)
+      //  console.log('RESULTTTTTT', result);
+      //  this.state.providername = result._bodyInit;
+      //  var temp = result._bodyInit;
+      //  var ind = temp.indexOf("=")
+      //  var first_half = temp.slice(ind+1, ind + temp.length)
+      //  console.log(first_half)
+      //  var ind_equal = first_half.indexOf("=")
+      //  var ind_fs = temp.indexOf("[")
+      //  var ind_sc = temp.indexOf("@")
+      //  var ProviderName = temp.slice(ind_fs+1, ind_sc)
+      //  console.log(ProviderName)
+      //  this.state.providername = "The Nearest Provider is : " + ProviderName
+      //  var lati = first_half.slice(0, ind_equal)
+      //  var longi = first_half.slice(ind_equal+1, first_half.length-1)
+      //  console.log("JDSHDK", lati, longi)
   
-       this.provs = {
-         latitude: parseFloat(lati),
-         longitude : parseFloat(longi)
-       }
-       console.log(this.provs)
+      //  this.provs = {
+      //    latitude: parseFloat(lati),
+      //    longitude : parseFloat(longi)
+      //  }
+      //  console.log(this.provs)
        
        //this.checkStatus(result.status, result._bodyInit)
      } catch (error) {
@@ -118,8 +224,10 @@ export default class loc extends React.Component {
        //this.state.latitude=position["coords"]["latitude"];
         console.log(position["coords"]["latitude"]);
         console.log(position["coords"]["longitude"]);
-        this.state.map.lat = position["coords"]["latitude"];
-        this.state.map.lon = position["coords"]["longitude"];
+        // this.state.map.lat = position["coords"]["latitude"];
+        // this.state.map.lon = position["coords"]["longitude"];
+        this.state.map.lat = 30.1;
+        this.state.map.lon = 31.0;
         this.postloc()
        //this.state.longitude = position["coords"]["longitude"];
      }, err => console.log(err));
@@ -127,7 +235,13 @@ export default class loc extends React.Component {
    }
    render() {
     const {navigate} = this.props.navigation;
+    const items = [
+      'TURQUOISE', 'EMERALD',
+       'PETER RIVER', 'AMETHYST',
+     'WET ASPHALT'
+    ];
      return (
+       
        <View style={styles.container}>
 
        <MapView
@@ -143,6 +257,21 @@ export default class loc extends React.Component {
         </MapView>
         <Modal isVisible={this.state.isModalVisible}>
           <View style={{ flex: 1 }}>
+          <FlatGrid
+              itemDimension={130}
+              items={this.state.tot_provs}
+              style={styles.gridView}
+              // staticDimension={300}
+              // fixed
+              // spacing={20}
+              renderItem={({ item, index }) => (
+                <View style={[styles.itemContainer, { backgroundColor: '#3498db' }]}>
+                  <Text style={styles.itemName}>{item}</Text>
+                  <Button onPress = {() => {this.acceptProvider(item)}}><Text>Select </Text></Button>
+                  {/* <Text style={styles.itemCode}>{item.code}</Text> */}
+                </View>
+            )}
+        />
 
             <Text style={styles.text}>{this.state.providername}</Text>
             <Text style={styles.text}>Price is : {this.state.amount}</Text>
@@ -181,7 +310,26 @@ export default class loc extends React.Component {
     fontWeight: "bold",
     color: "#ffffff"
   },
-
+  gridView: {
+    marginTop: 20,
+    flex: 1,
+  },
+  itemContainer: {
+    justifyContent: 'flex-end',
+    borderRadius: 5,
+    padding: 10,
+    height: 150,
+  },
+  itemName: {
+    fontSize: 16,
+    color: '#fff',
+    fontWeight: '600',
+  },
+  itemCode: {
+    fontWeight: '600',
+    fontSize: 12,
+    color: '#fff',
+  },
   button:{
     alignSelf: 'stretch',
     alignItems: 'center',
@@ -208,4 +356,3 @@ export default class loc extends React.Component {
     left: 148.53
   }
 });
-

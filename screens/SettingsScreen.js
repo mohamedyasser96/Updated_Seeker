@@ -10,8 +10,13 @@ import { Button } from 'native-base';
 import { TextInput } from 'react-native-gesture-handler';
 import { CreditCardInput, LiteCreditCardInput } from "react-native-credit-card-input";
  
-state = { useLiteCreditCardInput: false };
 
+state = {
+  
+  useLiteCreditCardInput: false,
+
+    
+};
   _onChange = (formData) => console.log(JSON.stringify(formData, null, " "));
   _onFocus = (field) => console.log("focusing", field);
   _setUseLiteCreditCardInput = (useLiteCreditCardInput) => this.setState({ useLiteCreditCardInput });
@@ -24,7 +29,7 @@ const cards = [
     content: 
     <View >
       <Text style={{alignSelf: 'stretch',
-      marginBottom: 30}} >Edit Password</Text>
+      marginBottom: 30}} >Edit Fields</Text>
       <TextInput style={{alignSelf: 'stretch',
       height: 40,
       marginBottom: 30,
@@ -125,6 +130,19 @@ export default class SettingsScreen extends React.Component {
   static navigationOptions = {
     header:null,
   }; 
+  constructor(props){
+    super(props);
+    this.state = {
+      username: '',
+      password: '',
+      //email: '',
+      mobileNumber: '',
+      useLiteCreditCardInput: false,
+  
+        
+    };
+    
+  }
   render() {
     return (
       <View style={styles.container}>

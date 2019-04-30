@@ -52,7 +52,7 @@ export default class App extends Component {
     
     async register2(){
      try { 
-      let result = await fetch('http://127.0.0.1:8080/register/seeker', {
+      let result = await fetch('http://192.168.1.3:8080/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
