@@ -1,10 +1,12 @@
 import React from 'react';
-import { StyleSheet, Text, View, AsyncStorage, Alert, Picker } from 'react-native';
+import { StyleSheet, Text, View, AsyncStorage, Alert, Picker, ScrollView, TextInput } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal"
 import EventSource from "react-native-event-source";
 import { FlatGrid } from 'react-native-super-grid';
 import { Dropdown } from 'react-native-material-dropdown';
+import SockJS from 'sockjs-client';
+import Stomp from "stompjs";
 
 //import Button4 from "../symbols/button4";
 
@@ -13,9 +15,13 @@ import {createStackNavigator, createAppContainer} from 'react-navigation';
 
 
 import FetchLocation from "../app/components/FetchLocation"
-import { Button } from 'native-base';
+import { Button , Icon} from 'native-base';
 
-
+var stompClient = null;
+var img = null;
+var sesid = null;
+var items = [];
+var topic = null;
 
 export default class loc extends React.Component {
   _retrieveData = async () => {
@@ -47,8 +53,23 @@ export default class loc extends React.Component {
             providername: '',
             amount: '100 EGP',
             tot_provs: ['henna', 'asser', 'hamada'],
-            itemcolor: 'blue'
+            itemcolor: 'blue',
+            email: '',
+            screenFlag: false, 
+            item : [],
+            mess: '', 
+            OnReuqest: false,
+
+
+            
         };
+
+        this.change = this.change.bind(this);
+        this.on_connect = this.on_connect.bind(this);
+        
+        setInterval(() => (
+          this.setState({item:items})), 1000);
+        
         
 
         
@@ -56,67 +77,109 @@ export default class loc extends React.Component {
         //this.getUserLocation = this.getUserLocation.bind(this);
     }
 
-    async triggerAlert(providers) {
+    async on_connect(emails){
 
-      var my_provs = []
-      var sex = providers
+      var socket = new SockJS('http://localhost:8080/chat');
+      stompClient = Stomp.over(socket);  
+
+      let email =  await AsyncStorage.getItem('email');
+      topic = email + "_" + emails;
+        
+      stompClient.connect({}, function(frame) {
+      
+        var urlarray = socket._transport.url.split('/');
+        var index = urlarray.length - 2;
+  
+        sesid = urlarray[index];
+        
+        stompClient.subscribe('/user/topic/messages', function(messageOutput) {
+          console.log('Message Received')
+  
+          var obj = JSON.parse(messageOutput.body)
+          items.splice(0, 0, obj.from +": "+obj.message);
+        });
+  
+        stompClient.subscribe('/user/topic/images', function(messageOutput) {
+          console.log('Image Received:');
+        });
+
+        stompClient.subscribe('/user/topic/location', function(messageOutput) {
+          console.log('Location Received:');
+        });
+
+  
+        var Obj = { "topic": topic ,"id": sesid};
+        var jsonObj = JSON.stringify(Obj);
+        stompClient.send("/app/register", {}, jsonObj);
+  
+      });
+  
+      }
+  
+
+    sendMessage = () =>{
+      var from = this.state.email
+      var text = this.state.mess
+  
+      stompClient.send("/app/chat/text/"+topic, {}, JSON.stringify({'from':from, 'text':text}));
+    }
+
+    on_disconnect = () => {
+    
+      var Obj = { "topic": topic,"id": sesid};
+      var jsonObj = JSON.stringify(Obj);
+      stompClient.send("/app/disconnect", {}, jsonObj);
+  
+      if(stompClient != null) {
+        stompClient.disconnect();
+      }
+  
+    }
+
+    async triggerAlert(providers) {
       console.log("TRIGEER", providers);
-      for (let i = 0; i < providers.length; i++) {
-        console.log(i);
-        console.log(sex[i])
-         var obj = await { 
-          text: providers[i],
-          onPress: () => this.acceptProvider(sex[i])
-        };
-        my_provs.push(obj);
-     }
      this.state.tot_provs = providers
-    //  my_provs.push({text: "Cancel",
-    //                 onPress: () => console.log("Cancel")
-    //               });
-      // Alert.alert(
-      //   'Providers available',
-      //   "Please pick a provider",
-      //   my_provs,
-      //   {cancelable: false},
-      // );
       console.log(this.state.tot_provs),
       this._toggleModal()
       console.log(this.state)
 
     }
 
+    change = () => 
+        this.setState({ screenFlag: !this.state.screenFlag})
+
+    
+    toggleRequestPage = () => 
+        this.setState({ OnReuqest: !this.state.OnReuqest})
+
 
     _toggleModal = () => 
         this.setState({ isModalVisible: !this.state.isModalVisible})
 
-     componentDidMount() {
+     async componentDidMount() {
       //  this.acceptProvider = this.acceptProvider.bind(this);
+      this.state.email = await AsyncStorage.getItem('email')
        console.log("Inside here")
        this.global_ind = -1;
-      this.eventSource = new EventSource("http://10.7.126.227:8080/notifySeeker", {
+      this.eventSource = new EventSource("http://10.7.126.186:8080/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
           Authorization: "Bearer " + token
         }
       });
-      this.eventSource.addEventListener("close", data => {
-        console.log(data.type); // message
-        console.log("DATAAA", data);
-      });
 
       this.eventSource.addEventListener("message", data => {
         console.log(data.type); // message
         var res_str = data.data.slice(1); 
         var res_json = JSON.parse(res_str);
-        console.log("This IS RES JSON", res_json)
-        var provs = res_json["providers"];
-        console.log("type j", typeof(res_json));
-        console.log("type pr", typeof(provs));
   
-        this.triggerAlert(provs);
+        this.triggerAlert(res_json);
       });
+
+
+      
+
 
          navigator.geolocation.getCurrentPosition(position => {
              this.setState({
@@ -134,12 +197,17 @@ export default class loc extends React.Component {
          // title: 'Registration Screen',
       };
 
+
+
     async acceptProvider(emails) {
       // var emails = "asser1@email.com"
       console.log("emaail", emails);
+      
+      this.on_connect(emails);
+
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      fetch("http://10.7.126.227:8080/acceptProviders", {
+      fetch("http://10.7.126.186:8080/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -153,18 +221,70 @@ export default class loc extends React.Component {
         .then(response => response.text())
         .then(responseJson => {
           console.log(responseJson);
-          Alert.alert(
-            'Success',
-            'Provider Henna@email.com on the way',
-            [
-              {text: 'OK', onPress: () => console.log('OK Pressed')},
-            ],
-            {cancelable: false},
-          );
+          this.toggleRequestPage();
+          // Alert.alert(
+          //   'Success',
+          //   'Provider Henna@email.com on the way',
+          //   [
+          //     {text: 'OK', onPress: () => console.log('OK Pressed')},
+          //   ],
+          //   {cancelable: false},
+          // );
         })
         .catch(error => {
           console.error(error);
         });
+
+
+        this.eventSource = new EventSource("http://10.7.126.186:8080/requestCancelled", {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+
+      this.eventSource.addEventListener("message", data => {
+        console.log("KHSDAHDJA ", data.data); // message
+        // var res_str = data.data.slice(1); 
+        // var res_json = JSON.parse(res_str);
+
+        Alert.alert(
+          'Cancelled',
+          data.data,
+          [
+            {text: 'OK', onPress: () => console.log('OK Pressed')},
+          ],
+          {cancelable: false},
+        );
+
+      });
+
+
+        this.eventSource = new EventSource("http://10.7.126.186:8080/endRequest", {
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        }
+      });
+
+      this.eventSource.addEventListener("message", data => {
+        console.log(data.type); // message
+        // var res_str = data.data.slice(1); 
+        // var res_json = JSON.parse(res_str);
+        this.on_disconnect()
+        
+        Alert.alert(
+          'Provider Ended',
+          data.data,
+          [
+            {text: 'OK', onPress: () => {this.props.navigation.navigate('Pay'), this._toggleModal()}},
+          ],
+          {cancelable: false},
+        );
+
+      });
     }
   
   async postloc(){
@@ -179,7 +299,7 @@ export default class loc extends React.Component {
            this.state.map.lon = position["coords"]["longitude"];
         }, err => console.log(err));
         let token = await AsyncStorage.getItem('token')
-        fetch("http://10.7.126.227:8080/findProviders", {
+        fetch("http://10.7.126.186:8080/findProviders", {
           method: "POST",
           headers: {
             Accept: "application/json",
@@ -189,7 +309,7 @@ export default class loc extends React.Component {
           body: JSON.stringify({
             lat: this.state.latitude,
             lon: this.state.longitude,
-            num_providers: 2,
+            num_providers: 1,
             expertLevel: this.state.expertLevel
           })
         })
@@ -253,12 +373,14 @@ export default class loc extends React.Component {
     }, {
       value: '3',
     }];
+    let colors = ['#2ecc71', '#2980b9', '#f1c40f', '#95a5a6', '#c0392b'];
     const {navigate} = this.props.navigation;
     const items = [
       'TURQUOISE', 'EMERALD',
        'PETER RIVER', 'AMETHYST',
      'WET ASPHALT'
     ];
+    if(!this.state.screenFlag && !this.state.OnReuqest)
      return (
        
        <View style={styles.container}>
@@ -276,41 +398,36 @@ export default class loc extends React.Component {
         </MapView>
         <Modal isVisible={this.state.isModalVisible}>
           <View style={{ flex: 1 }}>
-          <FlatGrid
-              itemDimension={130}
-              items={this.state.tot_provs}
-              style={styles.gridView}
-              // staticDimension={300}
-              // fixed
-              // spacing={20}
-              renderItem={({ item, index }) => (
-                <View style={[styles.itemContainer, { backgroundColor: '#3498db' }]}>
-                  <Text style={styles.itemName}>{item}</Text>
-                  <Button onPress = {() => {this.acceptProvider(item)}}><Text>Select </Text></Button>
-                  {/* <Text style={styles.itemCode}>{item.code}</Text> */}
-                </View>
-            )}
-        />
+            <FlatGrid
+                itemDimension={140}
+                items={this.state.tot_provs}
+                style={styles.gridView}
+                renderItem={({ item, index }) => (
+                  <View style={[styles.itemContainer, { backgroundColor: '#2980b9'}]}>
+                  <Text style={styles.itemName}>{'Email: ' + item.email}</Text>
+                    <Text style={styles.itemName}>{'Dist: ' + item.distance}</Text>
+                    <Text style={styles.itemName}>{'ETA: ' + item.eta}</Text>
+                    <Text style={styles.itemName}>{'UN: ' + item.username}</Text>
+                    <Text style={styles.itemName}>{'MN: ' + item.mobileNumber}</Text>
+                    <Text style={styles.itemName}>{'Rating:' + item.rating}</Text>
 
-            <Text style={styles.text}>{this.state.providername}</Text>
-            <Text style={styles.text}>Price is : {this.state.amount}</Text>
-            <Button full success style={styles.button} onPress={() => {this._toggleModal(), navigate('Pay')}} >
-              <Text>PAY</Text>
-            </Button>
+                    <Button transparent success onPress = {() => {this.acceptProvider(item.email)}}><Text>Select </Text></Button>
+                    {/* <Button onPress = {() => {this.change()}}><Text>Chat </Text></Button> */}
+                    {/* <Text style={styles.itemCode}>{item.code}</Text> */}
+                  </View>
+                  
+              )}
+              
+              />
+            <Button iconLeft transparent style={{paddingLeft:10, paddingTop:10}} onPress={() => {this._toggleModal()}}>
+                <Icon name='close' />
+                <Text style={{paddingLeft:10}}>Cancel</Text>
+           </Button>  
             <Button full danger style={styles.button} onPress={() => {this._toggleModal()}} >
               <Text>Cancel </Text>
             </Button>
           </View>
         </Modal>
-        {/* <FetchLocation onGetLocation={this.getUserLocation} /> */}
-        {/* <Dropdown 
-                //dropdownOffset={top = 60}
-                style={styles.dd}
-                label='Expert Level'
-                baseColor='black'
-                placeholderTextColor='black'
-                data={data}
-           /> */}
            <Text style={{fontSize: 20, color: 'black', top: 70}}>Expert Level</Text>
            <Picker
               selectedValue={this.state.expertLevel}
@@ -318,13 +435,65 @@ export default class loc extends React.Component {
               onValueChange={(itemValue, itemIndex) =>
                 this.setState({expertLevel: itemValue})
               }>
-              <Picker.Item label="1" value = "1" />
-              <Picker.Item label="2" value = "2" />
-              <Picker.Item label="3" value = "3" />
+              <Picker.Item label="Low" value = "1" />
+              <Picker.Item label="Medium" value = "2" />
+              <Picker.Item label="High" value = "3" />
             </Picker>
           <Button full success style={styles.button} onPress={() => {this.postloc()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
+          {/* <Button full success style={styles.button} onPress={() => {this.toggleRequestPage()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button> */}
        </View>
      );
+     else if(this.state.OnReuqest && !this.state.screenFlag)
+          return(
+
+            <View style={styles.container}>
+
+                <MapView
+                        style={styles.map}
+                        region={{
+                          latitude: this.state.latitude,
+                          longitude: this.state.longitude,
+                          latitudeDelta: 0.015,
+                          longitudeDelta: 0.0121,
+                        }}>
+                        <Marker coordinate={this.state} />
+                        <Marker coordinate={this.provs} pinColor='#417df4'/>
+                  </MapView>
+                  {/* <Text style={{fontSize: 20, color: 'black', top: '50%'}}>On Request</Text> */}
+                <Button full success style={styles.button} onPress={() => {this.change()}} ><Text style={{color:'#ffffff'}}>CHAT</Text></Button>
+                <Button full success style={styles.button} onPress={() => {this._toggleModal()}} ><Text style={{color:'#ffffff'}}>CANCEL</Text></Button>
+
+            </View>
+
+     );
+     else{
+      return (
+        <View style={styles.container2}>
+  
+          <TextInput
+            style={[styles.default, {height: Math.max(35, this.state.height)}]}
+            placeholder="Message"
+            value={this.state.mess}
+            onChangeText={(text) => this.setState({mess:text})}
+                  />
+  
+          <Button full success style={styles.button} onPress={() => {this.sendMessage()}} ><Text style={{color:'#ffffff'}}>Send Message</Text></Button>
+          <Button full success style={styles.button} onPress = {() => {this.change()}}><Text>Chat </Text></Button>
+
+  
+          <ScrollView>
+            { 
+              this.state.item.map((item,key) =>
+              (
+                  <View key = {key} style = {styles.item}>
+                    <Text style = {styles.text2}> {item} </Text>
+                  </View>
+              ))
+            }
+          </ScrollView>
+        </View>
+      );
+     }
    }
 }
 
@@ -353,12 +522,12 @@ export default class loc extends React.Component {
   },
   itemContainer: {
     justifyContent: 'flex-end',
-    borderRadius: 5,
+    borderRadius: 30,
     padding: 10,
-    height: 150,
+    height: 180,
   },
   itemName: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#fff',
     fontWeight: '600',
   },
@@ -401,5 +570,20 @@ export default class loc extends React.Component {
     height: 43,
     top: "58.98%",
     left: 148.53
-  }
+  },
+  text2: {
+    borderColor: 'black',
+    borderWidth : 1,
+    fontSize: 15,
+    color: "black",
+    padding :15
+},
+container2: {
+  paddingTop : 20
+},
+button2:{
+  color : "blue",
+  top: "25%"
+
+}
 });

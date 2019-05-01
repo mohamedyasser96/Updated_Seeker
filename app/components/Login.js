@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import { Center } from "@builderx/utils";
 import Button7 from "../symbols/button7";
 import Button9 from "../symbols/button9";
-import { Alert, View, StyleSheet, Text, Image, AppRegistry, AsyncStorage} from "react-native";
+import { Alert, View, StyleSheet, Text, Image, AppRegistry, AsyncStorage, KeyboardAvoidingView} from "react-native";
 import { Button } from 'native-base';
 import { TextInput } from 'react-native-gesture-handler';
 
@@ -55,6 +55,7 @@ export default class App extends Component {
         try{
         //console.log("Ana fl try")
         await AsyncStorage.setItem('token', token)
+        await AsyncStorage.setItem('email', this.state.email)
         this.props.navigation.navigate("Main")
         
       }
@@ -65,7 +66,7 @@ export default class App extends Component {
       async register2()
       {
         try { 
-         let result = await fetch('http://10.7.126.227:8080/login/seeker', {
+         let result = await fetch('http://10.7.126.186:8080/login/seeker', {
          method: 'POST',
          headers: {
            Accept: 'application/json',
@@ -91,7 +92,7 @@ export default class App extends Component {
   render() {
     const {navigate} = this.props.navigation;
     return (
-      <View style={styles.root}>
+      <KeyboardAvoidingView style={styles.root} behavior="padding" enabled>
         <View style={styles.rect} />
         {/* <Text style={styles.text}>CocoaBeans' Seeker</Text> */}
         <Center horizontal>
@@ -113,8 +114,8 @@ export default class App extends Component {
         <Button style={styles.button9} onPress={() => {navigate('Second')}}>
             <Text style={styles.buttonContent}>Click Here</Text>
         </Button> 
-        <Text style={styles.text2}>Not a User? </Text>
-      </View>
+        <Text style={styles.text2}> Not a User? </Text>
+      </KeyboardAvoidingView>
     );
   }
 }
@@ -124,8 +125,8 @@ const styles = StyleSheet.create({
     flex: 1
   },
   rect: {
-    height: 649.74,
-    width: 375,
+    height: '80%',
+    width: '100%',
     top: 0,
     left: 0,
     position: "absolute",
@@ -191,7 +192,7 @@ const styles = StyleSheet.create({
     color: 'white'
   },
   button7: {
-    top: 679,
+    top: '82.5%',
     position: "absolute",
     height: 44,
     width: 130,
@@ -206,7 +207,7 @@ const styles = StyleSheet.create({
     opacity: 0.91
   },
   button9: {
-    top: 738.5,
+    top: '90%',
     position: "absolute",
     height: 44,
     left: "32.8%",
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   text2: {
-    top: 732,
+    top: '88%',
     position: "absolute",
     backgroundColor: "transparent",
     left: "32.8%"
