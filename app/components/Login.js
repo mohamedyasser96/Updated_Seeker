@@ -2,7 +2,8 @@ import React, { Component } from 'react';
 import { Center } from "@builderx/utils";
 import Button7 from "../symbols/button7";
 import Button9 from "../symbols/button9";
-import { Alert, View, StyleSheet, Text, Image, AppRegistry, AsyncStorage, KeyboardAvoidingView} from "react-native";
+import { Camera, Permissions } from 'expo';
+import { Alert, View, StyleSheet, Text, Image, AppRegistry, AsyncStorage, KeyboardAvoidingView, TouchableOpacity} from "react-native";
 import { Button } from 'native-base';
 import { TextInput } from 'react-native-gesture-handler';
 
@@ -17,9 +18,64 @@ export default class App extends Component {
         super(props);
         this.state = { email: '',
                         password: '',
+                        FaceRegScreen: false,
+                        hasCameraPermission: null,
+                        type: Camera.Constants.Type.back,
                       };
+
+        this.loginFacial = this.loginFacial.bind(this);
        this.register2 = this.register2.bind(this);
       }
+
+
+      toggleFaceRecog = () => 
+      this.setState({ FaceRegScreen: !this.state.FaceRegScreen})
+  
+      async componentDidMount() {
+        const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+        this.setState({ hasCameraPermission: status === 'granted' });
+      }
+
+  async loginFacial() 
+  {
+
+      if (this.camera) {
+
+          const options = {
+              base64: true,
+              quality: 1.0
+          };
+
+          let data = await this.camera.takePictureAsync(options)
+
+        fetch('http://10.40.62.22:8080/loginFacial', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              Image: data.base64              
+            })
+         })
+         .then((response) => response.json())
+         .then((responseJson) => {
+            console.log(responseJson);
+            token = responseJson.Token
+            if(token != null)
+            {
+              console.log("Successfull Face login")
+              this._storeData(token)
+              
+            }
+            // Navigate to homescreen after law successfully logged in weih take the token 
+         })
+         .catch((error) => {
+            console.error(error);
+         }); 
+
+    }}
+
     showAlert (message) 
     {
       Alert.alert(
@@ -91,32 +147,94 @@ export default class App extends Component {
       };
   render() {
     const {navigate} = this.props.navigation;
-    return (
-      <KeyboardAvoidingView style={styles.root} behavior="padding" enabled>
-        <View style={styles.rect} />
-        {/* <Text style={styles.text}>CocoaBeans' Seeker</Text> */}
-        <Center horizontal>
-          <Image source={require("./2.png")} style={styles.image} />
-        </Center>
-        {/* <Center horizontal> */}
-          <TextInput style={styles.input} placeholder="Email" placeholderTextColor='#fff' onChangeText={(email) => this.setState({email})}
-            value={this.state.email}>
-          </TextInput>
-          <TextInput style={styles.input2} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff' onChangeText={(password) => this.setState({password})}
-            value={this.state.password}>
-          </TextInput>
-        {/* </Center> */}
-        <Center horizontal>
-          <Button style={styles.button7} onPress={() => {this.register2()}}>
-            <Text style={styles.bcont2}>Login</Text>
-          </Button>
-        </Center>
-        <Button style={styles.button9} onPress={() => {navigate('Second')}}>
-            <Text style={styles.buttonContent}>Click Here</Text>
-        </Button> 
-        <Text style={styles.text2}> Not a User? </Text>
-      </KeyboardAvoidingView>
-    );
+    if(this.state.FaceRegScreen){
+      return(
+        <View style={{ flex: 1 }}>
+          <Camera style={{ flex: 1 }} type={this.state.type} ref={ref => { this.camera = ref; }}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'transparent',
+                flexDirection: 'row',
+              }}>
+              <TouchableOpacity
+                style={{
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                  marginLeft:20
+                }}
+                onPress={() => {
+                  this.setState({
+                    type: this.state.type === Camera.Constants.Type.back
+                      ? Camera.Constants.Type.front
+                      : Camera.Constants.Type.back,
+                  });
+                }}>
+                <Text
+                  style={{ fontSize: 20 , marginBottom: 50, color: 'white' }}>
+                Flip
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                  marginLeft:60
+                }}
+                onPress={() => {this.toggleFaceRecog()}}>
+                <Text
+                  style={{ fontSize: 20 , marginBottom: 50, color: 'white' }}>
+                Back
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                  marginLeft:90
+                }}
+                onPress={() => {this.loginFacial()}}>
+                <Text
+                  style={{ fontSize: 20 , marginBottom: 50, color: 'white' }}>
+                Login
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Camera>
+        </View>
+      );
+    }
+    else
+        return (
+          <KeyboardAvoidingView style={styles.root} behavior="padding" enabled>
+            <View style={styles.rect} />
+            {/* <Text style={styles.text}>CocoaBeans' Seeker</Text> */}
+            <Center horizontal>
+              <Image source={require("./2.png")} style={styles.image} />
+            </Center>
+            {/* <Center horizontal> */}
+              <TextInput style={styles.input} placeholder="Email" placeholderTextColor='#fff' onChangeText={(email) => this.setState({email})}
+                value={this.state.email}>
+              </TextInput>
+              <TextInput style={styles.input2} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff' onChangeText={(password) => this.setState({password})}
+                value={this.state.password}>
+              </TextInput>
+            {/* </Center> */}
+            <Center horizontal>
+              <Button style={styles.button7} onPress={() => {this.register2()}}>
+                <Text style={styles.bcont2}>Login</Text>
+              </Button>
+              <Button style={styles.button8} onPress={() => {this.toggleFaceRecog()}}>
+                <Text style={styles.bcont2}>Face ID</Text>
+              </Button>
+            </Center>
+            <Button style={styles.button9} onPress={() => {navigate('Second')}}>
+                <Text style={styles.buttonContent}>Click Here</Text>
+            </Button> 
+            <Text style={styles.text2}> Not a User? </Text>
+          </KeyboardAvoidingView>
+        );
   }
 }
 const styles = StyleSheet.create({
@@ -206,11 +324,26 @@ const styles = StyleSheet.create({
     borderRadius: 5,
     opacity: 0.91
   },
+  button8: {
+    top: '89%',
+    position: "absolute",
+    height: 44,
+    width: 130,
+    left: "32.8%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "rgba(164,41,34,1)",
+    paddingRight: 16,
+    paddingLeft: 16,
+    borderRadius: 5,
+    opacity: 0.91
+  },
   button9: {
     top: '90%',
     position: "absolute",
     height: 44,
-    left: "32.8%",
+    left: "9.8%",
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
@@ -218,9 +351,9 @@ const styles = StyleSheet.create({
     borderRadius: 5
   },
   text2: {
-    top: '88%',
+    top: '89%',
     position: "absolute",
     backgroundColor: "transparent",
-    left: "32.8%"
+    left: "8.8%"
   }
 });

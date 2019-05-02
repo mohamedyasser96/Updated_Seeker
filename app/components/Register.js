@@ -1,7 +1,9 @@
 import React, { Component } from 'react';
 import { Center } from "@builderx/utils";
-import { Alert, View, StyleSheet, Text, Image, AppRegistry } from "react-native";
+import { Alert, View, StyleSheet, Text, Image, AppRegistry, KeyboardAvoidingView, TouchableOpacity } from "react-native";
+import { Camera, Permissions } from 'expo';
 import { TextInput } from 'react-native-gesture-handler';
+
 import { Button } from 'native-base';
 
 export default class App extends Component {
@@ -44,15 +46,29 @@ export default class App extends Component {
                       password: '',
                       email: '',
                       mobileNumber: '',
+                      FaceRegScreen: false,
+                      hasCameraPermission: null,
+                      type: Camera.Constants.Type.back,
                     };
+
+      this.registerFace = this.registerFace.bind(this);
+      this.loginFacial = this.loginFacial.bind(this);
   
      //this.register2 = this.register2.bind(this);
     }
+
+    toggleFaceRecog = () => 
+        this.setState({ FaceRegScreen: !this.state.FaceRegScreen})
     
-    
+    async componentDidMount() {
+      const { status } = await Permissions.askAsync(Permissions.CAMERA_ROLL);
+      this.setState({ hasCameraPermission: status === 'granted' });
+    }
+
+
     async register2(){
      try { 
-      let result = await fetch('http://172.20.10.2:8080/register/seeker', {
+      let result = await fetch('http://10.40.62.22:8080/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -69,36 +85,180 @@ export default class App extends Component {
       console.log('aywaaa')
     };
   }
+  async registerFace() 
+  {
+      console.log("In reg faceeeeee")
+      if (this.camera) {
+
+          console.log("Inside this.camera ")
+
+          const options = {
+              base64: true,
+              quality: 1.0
+          };
+
+          let data = await this.camera.takePictureAsync(options)
+
+          console.log("In reg face: ", data)
+
+        fetch('http://10.40.62.22:8080/saveImage', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              Image: data.base64,
+              email: this.state.email //here put the email el byregister beih
+            })
+         })
+         .then((response) => response.json())
+         .then((responseJson) => {
+            console.log(responseJson);
+         })
+         .catch((error) => {
+            console.error(error);
+         });
+    }
+    this.toggleFaceRecog();
+  }
+
+  async loginFacial() 
+  {
+
+      if (this.camera) {
+
+          const options = {
+              base64: true,
+              quality: 1.0
+          };
+
+          let data = await this.camera.takePictureAsync(options)
+
+        fetch('http://10.40.62.22:8080/loginFacial', {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              Image: data.base64              
+            })
+         })
+         .then((response) => response.json())
+         .then((responseJson) => {
+            console.log(responseJson);
+            // Navigate to homescreen after law successfully logged in weih take the token 
+         })
+         .catch((error) => {
+            console.error(error);
+         }); 
+
+    }
+  }
+
+
+
   render() {
     const {navigate} = this.props.navigation;
-    return (
-      <View style={styles.root}>
-        <View style={styles.rect} />
-        <Text style={styles.text}>Register</Text>
-          <TextInput style={styles.textinput} placeholder="Username" placeholderTextColor='#fff' onChangeText={(username) => this.setState({username})}
-            value={this.state.username}>
-          </TextInput>
-          <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff' onChangeText={(email) => this.setState({email})}
-            value={this.state.email}>
-          </TextInput>
-          <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff' onChangeText={(password) => this.setState({password})}
-            value={this.state.password}>
-          </TextInput>
-          <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='#fff' onChangeText={(mobileNumber) => this.setState({mobileNumber})}
-            value={this.state.mobileNumber}>
-          </TextInput>
-          {/* <Center horizontal>
-          <Button9 style={styles.button7} />
-          </Center>  */}
-          
-          <Center horizontal>
-            <Button style={styles.button7} onPress={() => {this.register2()}}>
-                <Text style={styles.bcont2}>Register</Text>
-            </Button>
-        </Center>
+    const { hasCameraPermission } = this.state;
 
-      </View>
-    );
+    if(this.state.FaceRegScreen){
+      return(
+        <View style={{ flex: 1 }}>
+          <Camera style={{ flex: 1 }} type={this.state.type} ref={ref => { this.camera = ref; }}>
+            <View
+              style={{
+                flex: 1,
+                backgroundColor: 'transparent',
+                flexDirection: 'row',
+              }}>
+              <TouchableOpacity
+                style={{
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                  marginLeft:20
+                }}
+                onPress={() => {
+                  this.setState({
+                    type: this.state.type === Camera.Constants.Type.back
+                      ? Camera.Constants.Type.front
+                      : Camera.Constants.Type.back,
+                  });
+                }}>
+                <Text
+                  style={{ fontSize: 20 , marginBottom: 50, color: 'white' }}>
+                Flip
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                  marginLeft:60
+                }}
+                onPress={() => {this.registerFace()}}>
+                <Text
+                  style={{ fontSize: 20 , marginBottom: 50, color: 'white' }}>
+                Register
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={{
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                  marginLeft:90
+                }}
+                onPress={() => {this.toggleFaceRecog()}}>
+                <Text
+                  style={{ fontSize: 20 , marginBottom: 50, color: 'white' }}>
+                Back
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </Camera>
+        </View>
+      );
+    }
+
+
+
+
+
+    else 
+      return (
+        <KeyboardAvoidingView style={styles.root} behavior="padding" enabled>
+          <View style={styles.rect} />
+          <Text style={styles.text}>Register</Text>
+            <TextInput style={styles.textinput} placeholder="Username" placeholderTextColor='#fff' onChangeText={(username) => this.setState({username})}
+              value={this.state.username}>
+            </TextInput>
+            <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff' onChangeText={(email) => this.setState({email})}
+              value={this.state.email}>
+            </TextInput>
+            <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff' onChangeText={(password) => this.setState({password})}
+              value={this.state.password}>
+            </TextInput>
+            <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='#fff' onChangeText={(mobileNumber) => this.setState({mobileNumber})}
+              value={this.state.mobileNumber}>
+            </TextInput>
+            {/* <Center horizontal>
+            <Button9 style={styles.button7} />
+            </Center>  */}
+            
+            <Center horizontal>
+              <Button style={styles.button7} onPress={() => {this.register2()}}>
+                  <Text style={styles.bcont2}>Register</Text>
+              </Button>
+              <Button style={styles.button8} onPress={() => {this.toggleFaceRecog()}}>
+                  <Text style={styles.bcont2}>Register Face</Text>
+              </Button>
+
+          </Center>
+
+        </KeyboardAvoidingView>
+      );
   }
 }
 const styles = StyleSheet.create({
@@ -111,17 +271,23 @@ const styles = StyleSheet.create({
      alignItems: 'center',
      justifyContent: 'center',
   },
+  bcont2: {
+    fontSize: 15,
+    fontWeight: "500",
+    fontFamily: "Roboto",
+    color: "#fff"
+  },
   rect: {
-    height: 649.74,
-    width: 375,
+    height: '80%',
+    width: '200%',
     top: 0,
     left: 0,
     position: "absolute",
     backgroundColor: "rgba(2, 84, 3,1)",
     opacity: 1
   },
-  button7: {
-    top: 679,
+  button8: {
+    top: '89%',
     position: "absolute",
     height: 44,
     width: 130,
@@ -181,7 +347,7 @@ const styles = StyleSheet.create({
     marginRight:60
   },
   button7: {
-    top: 679,
+    top: '82.5%',
     position: "absolute",
     height: 44,
     width: 130,
@@ -192,17 +358,18 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(164,41,34,1)",
     paddingRight: 16,
     paddingLeft: 16,
+    //paddingBottom: 10,
     borderRadius: 5,
     opacity: 0.91
   },
   button9: {
-    top: 738.5,
+    top: '90%',
     position: "absolute",
     height: 44,
     left: "32.8%"
   },
   text2: {
-    top: 732,
+    top: '88%',
     position: "absolute",
     backgroundColor: "transparent",
     left: "32.8%"

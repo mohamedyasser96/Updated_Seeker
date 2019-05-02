@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, Text, View, AsyncStorage, Alert, Picker, ScrollView, TextInput } from 'react-native';
+import {StyleSheet, Text, View, AsyncStorage, Alert, Picker, ScrollView, TextInput } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal"
 import EventSource from "react-native-event-source";
@@ -79,7 +79,7 @@ export default class loc extends React.Component {
 
     async on_connect(emails){
 
-      var socket = new SockJS('http://localhost:8080/chat');
+      var socket = new SockJS('http://10.7.126.186:8080/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');

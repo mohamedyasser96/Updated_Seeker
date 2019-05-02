@@ -27,6 +27,7 @@
     "react-native-image-picker": "^0.28.1",
     "react-native-linear-gradient": "^2.5.4",
     "react-native-material-dropdown": "^0.11.1",
+    "react-native-message-bubble": "^1.0.6",
     "react-native-modal": "^9.0.0",
     "react-native-network-info": "^4.0.1",
     "react-native-photo-upload": "^1.3.0",
