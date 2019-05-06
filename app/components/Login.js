@@ -48,7 +48,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://10.40.62.22:8080/loginFacial', {
+        fetch('http://172.20.10.2:5000/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -122,7 +122,7 @@ export default class App extends Component {
       async register2()
       {
         try { 
-         let result = await fetch('http://10.7.126.186:8080/login/seeker', {
+         let result = await fetch('http://172.20.10.2:5000/login/seeker', {
          method: 'POST',
          headers: {
            Accept: 'application/json',

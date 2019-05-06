@@ -1,12 +1,12 @@
 import React from 'react';
-import {StyleSheet, Text, View, AsyncStorage, Alert, Picker, ScrollView, TextInput } from 'react-native';
+import {StyleSheet, Text, View, AsyncStorage, Alert, Picker, ScrollView, ConsolePanel, TextInput } from 'react-native';
 import MapView, { Marker } from "react-native-maps";
 import Modal from "react-native-modal"
 import EventSource from "react-native-event-source";
 import { FlatGrid } from 'react-native-super-grid';
-import { Dropdown } from 'react-native-material-dropdown';
 import SockJS from 'sockjs-client';
 import Stomp from "stompjs";
+import StarRating from 'react-native-star-rating';
 
 //import Button4 from "../symbols/button4";
 
@@ -59,6 +59,13 @@ export default class loc extends React.Component {
             item : [],
             mess: '', 
             OnReuqest: false,
+            requestID: '',
+            RatingScreen: false,
+            starCount: 2.5,
+            comment : "" ,
+            provEmail: "",
+            base64Image: ''
+
 
 
             
@@ -77,9 +84,66 @@ export default class loc extends React.Component {
         //this.getUserLocation = this.getUserLocation.bind(this);
     }
 
+    // Rating Functions
+
+    onStarRatingPress(rating) {
+      this.setState({
+        starCount: rating
+      });
+    }
+
+    handlePress= ()=> {
+      console.log("Key Pressed " + this.state.comment + " "+ this.state.starCount) 
+      fetch("http://172.20.10.2:5000/rate", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + token
+        },
+        body: JSON.stringify({
+          email: this.state.provEmail,
+          rating: this.state.starCount,
+          comments: this.state.comment
+        })
+      })
+        .then(response => response.text())
+        .then(responseJson => {
+          console.log(responseJson);
+          //this.toggleRequestPage();
+          // Alert.alert(
+          //   'Success',
+          //   'Provider Henna@email.com on the way',
+          //   [
+          //     {text: 'OK', onPress: () => console.log('OK Pressed')},
+          //   ],
+          //   {cancelable: false},
+          // );
+        })
+        .catch(error => {
+          console.error(error);
+        });
+    }
+
+
+    //Messaging Functions
+    pickImage = async () => {
+      const options = {
+          base64: true,
+          quality: 1.0,
+          aspect :[4,3]
+      };
+  
+      let result = await ImagePicker.launchImageLibraryAsync(options);
+  
+      if (!result.cancelled) {
+        this.setState({ base64Image: result.base64 });
+      }
+    };
+
     async on_connect(emails){
 
-      var socket = new SockJS('http://10.7.126.186:8080/chat');
+      var socket = new SockJS('http://172.20.10.2:5000/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');
@@ -96,11 +160,19 @@ export default class loc extends React.Component {
           console.log('Message Received')
   
           var obj = JSON.parse(messageOutput.body)
+
+          var dict = {"from": obj.from, "imageFlag": false, "message":obj.message}
           items.splice(0, 0, obj.from +": "+obj.message);
         });
   
         stompClient.subscribe('/user/topic/images', function(messageOutput) {
           console.log('Image Received:');
+
+          var obj = JSON.parse(messageOutput.body)
+
+          var dict = {"from": obj.from, "imageFlag": true, "message":obj.message}
+  
+          items.splice(0,0,dict);
         });
 
         stompClient.subscribe('/user/topic/location', function(messageOutput) {
@@ -124,6 +196,14 @@ export default class loc extends React.Component {
       stompClient.send("/app/chat/text/"+topic, {}, JSON.stringify({'from':from, 'text':text}));
     }
 
+    sendImage = () =>{
+      var from = this.state.name
+      var text = this.state.base64Image
+      var topic = this.state.topic
+  
+      stompClient.send("/app/chat/images/"+topic, {}, JSON.stringify({'from':from, 'text':text}));
+    }
+
     on_disconnect = () => {
     
       var Obj = { "topic": topic,"id": sesid};
@@ -138,12 +218,17 @@ export default class loc extends React.Component {
 
     async triggerAlert(providers) {
       console.log("TRIGEER", providers);
-     this.state.tot_provs = providers
+      this.state.tot_provs = providers
       console.log(this.state.tot_provs),
       this._toggleModal()
-      console.log(this.state)
+      //console.log(this.state)
 
     }
+
+    // Toggling Screens
+
+    toggleRating = () => 
+        this.setState({ RatingScreen: !this.state.RatingScreen})
 
     change = () => 
         this.setState({ screenFlag: !this.state.screenFlag})
@@ -156,12 +241,15 @@ export default class loc extends React.Component {
     _toggleModal = () => 
         this.setState({ isModalVisible: !this.state.isModalVisible})
 
+      // Checking for stuff
      async componentDidMount() {
       //  this.acceptProvider = this.acceptProvider.bind(this);
+      this.interval = setInterval(() => this.sendLocation(), 10000);
+
       this.state.email = await AsyncStorage.getItem('email')
-       console.log("Inside here")
-       this.global_ind = -1;
-      this.eventSource = new EventSource("http://10.7.126.186:8080/notifySeeker", {
+      console.log("Inside here")
+      this.global_ind = -1;
+      this.eventSource = new EventSource("http://172.20.10.2:5000/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -171,43 +259,66 @@ export default class loc extends React.Component {
 
       this.eventSource.addEventListener("message", data => {
         console.log(data.type); // message
+        //if(data.type)
         var res_str = data.data.slice(1); 
         var res_json = JSON.parse(res_str);
-  
+        console.log("This is the new output: ", res_json)
+        //this.state.requestID = res_json.requestID;
+        //console.log("THIS IS REQ ID: ", res_json.requestID)
         this.triggerAlert(res_json);
       });
 
-
-      
-
-
-         navigator.geolocation.getCurrentPosition(position => {
+      navigator.geolocation.getCurrentPosition(position => {
              this.setState({
                  latitude: position.coords.latitude,
                  longitude: position.coords.longitude,
                  error: null
              }), console.log("Hey");
-         }, error => this.setState({ error: error.message}),
-         { enableHighAccuracy: true, timeout: 20000, maximumAge: 2000}
-         );
+      }, error => this.setState({ error: error.message}),
+      { enableHighAccuracy: true, timeout: 20000, maximumAge: 2000}
+       );
      }
+
+     //Send loc every once in a while
+     sendLocation = () =>{
+
+      if(stompClient != null){
+
+          var lat = this.state.latitude;
+          var long = this.state.longitude;
+          var from = this.state.email
+
+          stompClient.send("/app/chat/location/"+topic, {}, JSON.stringify({'from':from, 'long':long, 'lat':lat}));   
+      }
+    }
 
     static navigationOptions ={
         header:null
          // title: 'Registration Screen',
       };
 
-
+    postM(message){
+      Alert.alert(
+        'Sorry',
+        message,
+        [
+          
+          {text: 'OK', onPress: () => console.log('OK Pressed')},
+        ],
+        {cancelable: false},
+      );
+       }
 
     async acceptProvider(emails) {
       // var emails = "asser1@email.com"
       console.log("emaail", emails);
+      this.state.provEmail = emails;
       
       this.on_connect(emails);
 
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      fetch("http://10.7.126.186:8080/acceptProviders", {
+      fetch("http://172.20.10.2:5000/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -220,7 +331,7 @@ export default class loc extends React.Component {
       })
         .then(response => response.text())
         .then(responseJson => {
-          console.log(responseJson);
+          console.log("I am here bit",responseJson);
           this.toggleRequestPage();
           // Alert.alert(
           //   'Success',
@@ -236,7 +347,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSource = new EventSource("http://10.7.126.186:8080/requestCancelled", {
+        this.eventSource = new EventSource("http://172.20.10.2:5000/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -261,7 +372,7 @@ export default class loc extends React.Component {
       });
 
 
-        this.eventSource = new EventSource("http://10.7.126.186:8080/endRequest", {
+        this.eventSource = new EventSource("http://172.20.10.2:5000/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -279,7 +390,7 @@ export default class loc extends React.Component {
           'Provider Ended',
           data.data,
           [
-            {text: 'OK', onPress: () => {this.props.navigation.navigate('Pay'), this._toggleModal()}},
+            {text: 'OK', onPress: () => {this.toggleRating()}},
           ],
           {cancelable: false},
         );
@@ -287,102 +398,72 @@ export default class loc extends React.Component {
       });
     }
   
-  async postloc(){
-        try { 
-        // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
-        navigator.geolocation.getCurrentPosition(position => {
-           console.log(position["coords"]["latitude"]);
-           console.log(position["coords"]["longitude"]);
-           this.state.latitude = position["coords"]["latitude"];
-           this.state.longitude = position["coords"]["longitude"];
-           this.state.map.lat = position["coords"]["latitude"];
-           this.state.map.lon = position["coords"]["longitude"];
-        }, err => console.log(err));
-        let token = await AsyncStorage.getItem('token')
-        fetch("http://10.7.126.186:8080/findProviders", {
-          method: "POST",
-          headers: {
-            Accept: "application/json",
-            "Content-Type": "application/json",
-            Authorization: "Bearer " + token
-          },
-          body: JSON.stringify({
-            lat: this.state.latitude,
-            lon: this.state.longitude,
-            num_providers: 1,
-            expertLevel: this.state.expertLevel
+    async postloc(){
+      var flag = false;
+          try { 
+          // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
+          navigator.geolocation.getCurrentPosition(position => {
+            console.log(position["coords"]["latitude"]);
+            console.log(position["coords"]["longitude"]);
+            this.state.latitude = position["coords"]["latitude"];
+            this.state.longitude = position["coords"]["longitude"];
+            this.state.map.lat = position["coords"]["latitude"];
+            this.state.map.lon = position["coords"]["longitude"];
+          }, err => console.log(err));
+          let token = await AsyncStorage.getItem('token')
+          fetch("http://172.20.10.2:5000/findProviders", {
+            method: "POST",
+            headers: {
+              Accept: "application/json",
+              "Content-Type": "application/json",
+              Authorization: "Bearer " + token
+            },
+            body: JSON.stringify({
+              lat: this.state.latitude,
+              lon: this.state.longitude,
+              num_providers: 1,
+              expertLevel: this.state.expertLevel
+            }),
+            
           })
-        })
-          .then(response => response.text())
-          .then(responseJson => {
-            console.log(responseJson);
-          })
-          .catch(error => {
-            console.error(error);
-        });
-      //   console.log(body);
-      //   // console.log('HEADERS: ', headers)
-      //  console.log('RESULTTTTTT', result);
-      //  this.state.providername = result._bodyInit;
-      //  var temp = result._bodyInit;
-      //  var ind = temp.indexOf("=")
-      //  var first_half = temp.slice(ind+1, ind + temp.length)
-      //  console.log(first_half)
-      //  var ind_equal = first_half.indexOf("=")
-      //  var ind_fs = temp.indexOf("[")
-      //  var ind_sc = temp.indexOf("@")
-      //  var ProviderName = temp.slice(ind_fs+1, ind_sc)
-      //  console.log(ProviderName)
-      //  this.state.providername = "The Nearest Provider is : " + ProviderName
-      //  var lati = first_half.slice(0, ind_equal)
-      //  var longi = first_half.slice(ind_equal+1, first_half.length-1)
-      //  console.log("JDSHDK", lati, longi)
-  
-      //  this.provs = {
-      //    latitude: parseFloat(lati),
-      //    longitude : parseFloat(longi)
-      //  }
-      //  console.log(this.provs)
-       
-       //this.checkStatus(result.status, result._bodyInit)
-     } catch (error) {
-         console.log(error);
-         console.log('aywaaa')
-       };
-     }
-  //  getUserLocation = () => {
-  //    console.log('Pressed the button')
-  //    navigator.geolocation.getCurrentPosition(position => {
-  //      //this.state.latitude=position["coords"]["latitude"];
-  //       console.log(position["coords"]["latitude"]);
-  //       console.log(position["coords"]["longitude"]);
-  //       // this.state.map.lat = position["coords"]["latitude"];
-  //       // this.state.map.lon = position["coords"]["longitude"];
-  //       this.state.map.lat = 30.1;
-  //       this.state.map.lon = 31.0;
-  //       this.postloc()
-  //      //this.state.longitude = position["coords"]["longitude"];
-  //    }, err => console.log(err));
+            .then(response => response.text())
+            .then(responseJson => {
+              console.log("ghfhfh ", responseJson);
+              if(responseJson.charAt(0) === 'U')
+                {
+                  console.log('Tamaaaam')
+                  this.postM(responseJson)
+                }
+              else{
+              var JSONres = JSON.parse(responseJson)
+              this.state.requestID = JSONres.requestID;
+              console.log("THIS IS REQ ID: ", JSONres.requestID)
 
-  //  }
+              }
+              
+              
+
+              //var strResp = JSON.stringify(responseJson);
+              
+              
+            }
+            )
+            
+            .catch(error => {
+              console.error(error);
+          });
+
+      } catch (error) {
+          console.log(error);
+          console.log('aywaaa')
+        };
+      }
+
    render() {
-    let data = [{
-      value: '1',
-    }, {
-      value: '2',
-    }, {
-      value: '3',
-    }];
     let colors = ['#2ecc71', '#2980b9', '#f1c40f', '#95a5a6', '#c0392b'];
     const {navigate} = this.props.navigation;
-    const items = [
-      'TURQUOISE', 'EMERALD',
-       'PETER RIVER', 'AMETHYST',
-     'WET ASPHALT'
-    ];
-    if(!this.state.screenFlag && !this.state.OnReuqest)
+    if(!this.state.screenFlag && !this.state.OnReuqest && !this.state.RatingScreen)
      return (
-       
        <View style={styles.container}>
 
        <MapView
@@ -407,7 +488,7 @@ export default class loc extends React.Component {
                   <Text style={styles.itemName}>{'Email: ' + item.email}</Text>
                     <Text style={styles.itemName}>{'Dist: ' + item.distance}</Text>
                     <Text style={styles.itemName}>{'ETA: ' + item.eta}</Text>
-                    <Text style={styles.itemName}>{'UN: ' + item.username}</Text>
+                    {/* <Text style={styles.itemName}>{'UN: ' + item.username}</Text> */}
                     <Text style={styles.itemName}>{'MN: ' + item.mobileNumber}</Text>
                     <Text style={styles.itemName}>{'Rating:' + item.rating}</Text>
 
@@ -443,9 +524,50 @@ export default class loc extends React.Component {
           {/* <Button full success style={styles.button} onPress={() => {this.toggleRequestPage()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button> */}
        </View>
      );
-     else if(this.state.OnReuqest && !this.state.screenFlag)
-          return(
+     //Rating Screen
+     else if(this.state.RatingScreen && !this.state.screenFlag && this.state.OnReuqest)
+     {
+       return(
+      <View style = {{marginTop:100}}>
+          <Text style = {{textAlign: 'center', fontWeight: 'bold', fontSize: 18,}}>   Rate our service    </Text>
+                <StarRating
+                  disabled={false}
+                  emptyStar={'ios-star-outline'}
+                  fullStar={'ios-star'}
+                  halfStar={'ios-star-half'}
+                  iconSet={'Ionicons'}
+                  maxStars={5}
+                  containerStyle = {{marginTop:50}}
+                  halfStarEnabled
+                  rating={this.state.starCount}
+                  selectedStar={(rating) => this.onStarRatingPress(rating)}
+                  fullStarColor={'blue'}
+                />
+              
+              <Text style = {{marginTop: 50,marginBottom: 50, textAlign: 'center', fontWeight: 'bold', fontSize: 18,}}>   Give us Feedbacks    </Text>
 
+              <TextInput style={{marginTop: 25, marginBottom: 50, height: 100, borderColor: 'gray', borderWidth: 0.5}} onChangeText={(text) => this.setState({comment:text})} value={this.state.comment} />
+
+              <Button
+              large
+              full
+                  onPress = {this.handlePress}
+                  title = "Rate"
+                  color = "Red"
+              />
+              
+              {/* <Button
+                  onPress = {this.props.navigation.navigate('Pay')}
+                  title = "Pay for Service"
+                  color = "Blue"
+              /> */}
+
+      </View>
+       );
+     }
+     //On request Screen
+     else if(this.state.OnReuqest && !this.state.screenFlag  && !this.state.RatingScreen)
+          return(
             <View style={styles.container}>
 
                 <MapView
@@ -464,12 +586,12 @@ export default class loc extends React.Component {
                 <Button full success style={styles.button} onPress={() => {this._toggleModal()}} ><Text style={{color:'#ffffff'}}>CANCEL</Text></Button>
 
             </View>
-
      );
+     //Messaging Screen
      else{
       return (
         <View style={styles.container2}>
-  
+          
           <TextInput
             style={[styles.default, {height: Math.max(35, this.state.height)}]}
             placeholder="Message"
@@ -477,20 +599,45 @@ export default class loc extends React.Component {
             onChangeText={(text) => this.setState({mess:text})}
                   />
   
-          <Button full success style={styles.button} onPress={() => {this.sendMessage()}} ><Text style={{color:'#ffffff'}}>Send Message</Text></Button>
-          <Button full success style={styles.button} onPress = {() => {this.change()}}><Text>Chat </Text></Button>
+          
+          
 
   
           <ScrollView>
             { 
               this.state.item.map((item,key) =>
               (
-                  <View key = {key} style = {styles.item}>
-                    <Text style = {styles.text2}> {item} </Text>
-                  </View>
+                <View key = {key} style = {styles.item}>
+                { 
+                    item.imageFlag ? (
+                     <Image source={{ uri: `data:image/jpg;base64,${item.message}` }} style={{ width: 200, height: 200 }} />
+                ) : (
+                    <Text style = {styles.text}> {item.message} </Text>
+                    )}
+                </View>
               ))
             }
           </ScrollView>
+          <View style={styles.bottom}>
+            < Button full success style={styles.buttonC} onPress={() => {this.sendMessage()}} ><Text style={{color:'#ffffff'}}>Send Message</Text></Button>
+            <Button
+              onPress={this.sendImage}
+              title="Send Image"
+              color="blue"
+              accessibilityLabel="Learn more about this purple button"
+              />
+
+            <Button
+              onPress={this.pickImage}
+              title="Pick Image"
+              style = {{marginTop:50}}
+              color="blue"
+              accessibilityLabel="Learn more about this purple button"
+            />
+
+          </View>
+
+          <Button full success style={styles.buttonD} onPress = {() => {this.change()}}><Text>Back </Text></Button>
         </View>
       );
      }
@@ -498,6 +645,9 @@ export default class loc extends React.Component {
 }
 
  const styles = StyleSheet.create({
+   item:{
+    backgroundColor: 'rgba(2,84,3,1)',
+   },
    container: {
      flex: 1,
      backgroundColor: '#ffffff',
@@ -556,6 +706,28 @@ export default class loc extends React.Component {
     top: "70%",
     //left: 148.53
   },
+  buttonC:{
+    //alignSelf: 'stretch',
+    alignItems: 'center',
+    padding: 10,
+    paddingBottom: 10,
+    //backgroundColor: '#1990e5',
+    marginTop: 5,
+    //top: "90%",
+    position: 'absolute', //Here is the trick
+    bottom: 0,
+    //left: 148.53
+  },
+  buttonD:{
+    //alignSelf: 'stretch',
+    alignItems: 'center',
+    padding: 10,
+    paddingBottom: 10,
+    //backgroundColor: '#1990e5',
+    marginTop: 5,
+    top: "100%",
+    //left: 148.53
+  },
   btntext:{
       alignItems: 'center',
       fontSize: 17,
@@ -578,12 +750,31 @@ export default class loc extends React.Component {
     color: "black",
     padding :15
 },
+text3: {
+  borderColor: 'black',
+  borderWidth : 1,
+  fontSize: 15,
+  color: "white",
+  padding :15
+},
 container2: {
-  paddingTop : 20
+  paddingTop : 20,
+  //flex: 1,
+},
+container3: {
+  
+  flex: 1,
 },
 button2:{
   color : "blue",
   top: "25%"
 
+},
+bottom:{
+  flex: 1,
+    justifyContent: 'flex-end',
+    //marginBottom: 36
+  
 }
+
 });

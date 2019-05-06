@@ -1,132 +1,115 @@
 import React from 'react';
-import { StyleSheet, Text, View, Button,ConsolePanel, ScrollView, TextInput } from 'react-native';
-import SockJS from 'sockjs-client';
-import Stomp from "stompjs";
+import {
+  AppRegistry,
+  Image,
+  PixelRatio,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { ImagePicker } from 'expo';
 
-var stompClient = null;
-var img = null;
-var sesid = null;
-var items = [];
-
-export default class Main extends React.Component {
+export default class App extends React.Component {
+  state = {
+    avatarSource: null,
+    videoSource: null,
+  };
 
   constructor(props) {
     super(props);
-    this.state = { name: '' , topic: '' , mess:'', item :[]};
 
-    setInterval(() => (
-      this.setState({item:items})), 1000);
+    this.selectPhotoTapped = this.selectPhotoTapped.bind(this);
+    this.selectVideoTapped = this.selectVideoTapped.bind(this);
   }
-   
-  
-  on_connect = () => {
 
-    var socket = new SockJS('http://localhost:8080/chat');
-    stompClient = Stomp.over(socket);  
-    var topicSelected = this.state.topic;
+  selectPhotoTapped() {
+    const options = {
+      quality: 1.0,
+      maxWidth: 500,
+      maxHeight: 500,
+      storageOptions: {
+        skipBackup: true,
+      },
+    };
 
-    stompClient.connect({}, function(frame) {
-    
-      var urlarray = socket._transport.url.split('/');
-      var index = urlarray.length - 2;
+    ImagePicker.launchImageLibraryAsync(options, (response) => {
+      console.log('Response = ', response);
 
-      sesid = urlarray[index];
-      
-      stompClient.subscribe('/user/topic/messages', function(messageOutput) {
-        console.log('Message Received')
+      if (response.didCancel) {
+        console.log('User cancelled photo picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        let source = { uri: response.uri };
 
-        var obj = JSON.parse(messageOutput.body)
-        items.push(obj.from +":"+obj.message);
-      });
+        // You can also display the image using data:
+        // let source = { uri: 'data:image/jpeg;base64,' + response.data };
 
-      stompClient.subscribe('/user/topic/images', function(messageOutput) {
-        console.log('Image Received:');
-      });
-
-      var Obj = { "topic": topicSelected ,"id": sesid};
-      var jsonObj = JSON.stringify(Obj);
-      stompClient.send("/app/register", {}, jsonObj);
-
+        this.setState({
+          avatarSource: source,
+        });
+      }
     });
-
   }
 
-  on_disconnect = () => {
-    
-    var topic = this.state.topic;
-    var Obj = { "topic": topic,"id": sesid};
-    var jsonObj = JSON.stringify(Obj);
-    stompClient.send("/app/disconnect", {}, jsonObj);
+  selectVideoTapped() {
+    const options = {
+      title: 'Video Picker',
+      takePhotoButtonTitle: 'Take Video...',
+      mediaType: 'video',
+      videoQuality: 'medium',
+    };
 
-    if(stompClient != null) {
-      stompClient.disconnect();
-    }
+    ImagePicker.showImagePicker(options, (response) => {
+      console.log('Response = ', response);
 
-  }
-
-  sendMessage = () =>{
-    var from = this.state.name
-    var text = this.state.mess
-    var topic = this.state.topic
-
-    stompClient.send("/app/chat/text/"+topic, {}, JSON.stringify({'from':from, 'text':text}));
+      if (response.didCancel) {
+        console.log('User cancelled video picker');
+      } else if (response.error) {
+        console.log('ImagePicker Error: ', response.error);
+      } else if (response.customButton) {
+        console.log('User tapped custom button: ', response.customButton);
+      } else {
+        this.setState({
+          videoSource: response.uri,
+        });
+      }
+    });
   }
 
   render() {
     return (
       <View style={styles.container}>
-        <TextInput
-        style={[styles.default, {height: Math.max(35, this.state.height)}]}
-        placeholder="Name"
-          value={this.state.name}
-          onChangeText={(text) => this.setState({name:text})}
-        />
+        <TouchableOpacity onPress={this.selectPhotoTapped.bind(this)}>
+          <View
+            style={[
+              styles.avatar,
+              styles.avatarContainer,
+              { marginBottom: 20 },
+            ]}
+          >
+            {this.state.avatarSource === null ? (
+              <Text>Select a Photo</Text>
+            ) : (
+              <Image style={styles.avatar} source={this.state.avatarSource} />
+            )}
+          </View>
+        </TouchableOpacity>
 
-        <TextInput
-          style={[styles.default, {height: Math.max(35, this.state.height)}]}
-          placeholder="Topic"
-          value={this.state.topic}
-          onChangeText={(text) => this.setState({topic:text})}
-                />
+        <TouchableOpacity onPress={this.selectVideoTapped.bind(this)}>
+          <View style={[styles.avatar, styles.avatarContainer]}>
+            <Text>Select a Video</Text>
+          </View>
+        </TouchableOpacity>
 
-        <Button
-          onPress={this.on_connect}
-          title="Connect"
-          color="blue"
-          accessibilityLabel="Learn more about this purple button"
-          />
-
-        <Button
-          onPress={this.on_disconnect}
-          title="Disconnect"
-          color="blue"
-          accessibilityLabel="Learn more about this purple button"
-          />
-
-        <TextInput
-          style={[styles.default, {height: Math.max(35, this.state.height)}]}
-          placeholder="Message"
-          value={this.state.mess}
-          onChangeText={(text) => this.setState({mess:text})}
-                />
-
-        <Button
-          onPress={this.sendMessage}
-          title="Send Message"
-          color="blue"
-          accessibilityLabel="Learn more about this purple button"
-          />
-
-        <ScrollView>
-          { 
-            this.state.item.map((item,key) =>
-            (
-                <View key = {key} style = {styles.item}>
-                  <Text style = {styles.text}> {item} </Text>
-                </View>
-            ))
-          }
-        </ScrollView>
+        {this.state.videoSource && (
+          <Text style={{ margin: 8, textAlign: 'center' }}>
+            {this.state.videoSource}
+          </Text>
+        )}
       </View>
     );
   }
@@ -134,13 +117,20 @@ export default class Main extends React.Component {
 
 const styles = StyleSheet.create({
   container: {
-    paddingTop : 20
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#F5FCFF',
   },
-  text: {
-      borderColor: 'black',
-      borderWidth : 1,
-      fontSize: 15,
-      color: "black",
-      padding :15
-  }
+  avatarContainer: {
+    borderColor: '#9B9B9B',
+    borderWidth: 1 / PixelRatio.get(),
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  avatar: {
+    borderRadius: 75,
+    width: 150,
+    height: 150,
+  },
 });

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Platform } from 'react-native';
-import { createStackNavigator, createBottomTabNavigator } from 'react-navigation';
+import { createStackNavigator, createBottomTabNavigator, NavigationActions } from 'react-navigation';
 
 import TabBarIcon from '../components/TabBarIcon';
 import HomeScreen from '../screens/HomeScreen';
@@ -10,11 +10,13 @@ import Payment from '../app/components/Pay'
 
 const HomeStack = createStackNavigator({
   Home: HomeScreen,
+  
   Pay: Payment
 });
 
 HomeStack.navigationOptions = {
   tabBarLabel: 'Home',
+  headerLeft: null,
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -29,10 +31,12 @@ HomeStack.navigationOptions = {
 
 const LinksStack = createStackNavigator({
   Links: LinksScreen,
+  //headerLeft: null
 });
 
 LinksStack.navigationOptions = {
   tabBarLabel: 'Requests',
+  headerLeft: null,
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
@@ -43,10 +47,12 @@ LinksStack.navigationOptions = {
 
 const SettingsStack = createStackNavigator({
   Settings: SettingsScreen,
+  //headerLeft: null
 });
 
 SettingsStack.navigationOptions = {
   tabBarLabel: 'Settings',
+  headerLeft: null,
   tabBarIcon: ({ focused }) => (
     <TabBarIcon
       focused={focused}
