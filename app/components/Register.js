@@ -68,7 +68,7 @@ export default class App extends Component {
 
     async register2(){
      try { 
-      let result = await fetch('http://172.20.10.2:5000/register/seeker', {
+      let result = await fetch('http://10.40.59.113:5000/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -101,7 +101,7 @@ export default class App extends Component {
 
           console.log("In reg face: ", data)
 
-        fetch('http://172.20.10.2:5000/saveImage', {
+        fetch('http://10.40.59.113:5000/saveImage', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -135,7 +135,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://172.20.10.2:5000/loginFacial', {
+        fetch('http://10.40.59.113:5000/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',

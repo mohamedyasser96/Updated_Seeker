@@ -7,9 +7,6 @@ import { CreditCardInput, LiteCreditCardInput } from "react-native-credit-card-i
  
 
 import { Button } from 'native-base';
-
-import LinearGradient from 'react-native-linear-gradient';
-
 import { Dropdown } from 'react-native-material-dropdown';
 import { ScrollView } from 'react-native-gesture-handler';
 
@@ -87,7 +84,7 @@ export default class AddPaymentForm extends React.Component {
     }
     setC (){
         this.state.number = dd.values.number,
-        this.state.cvv = dd.values.cvc,
+        this.state.cvv = dd.values.cvc.toString(),
         console.log(this.state)
 
     }
@@ -179,7 +176,7 @@ export default class AddPaymentForm extends React.Component {
        this.setC()
        this.DataObject = this.setData()
       //  console.log("THIS IS MY TOKEN", this._retrieveData())
-       let result = await fetch('http://127.0.0.1:8080/purchase', {
+       let result = await fetch('http://10.40.59.113:5000/purchase', {
        method: 'POST',
        headers: {
          Accept: 'application/json',
