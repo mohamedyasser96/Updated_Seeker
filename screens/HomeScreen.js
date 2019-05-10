@@ -66,6 +66,7 @@ export default class loc extends React.Component {
             base64Image: '',
             hasCameraPermission: null,
             spinner: false,
+            description: ''
 
 
 
@@ -95,7 +96,7 @@ export default class loc extends React.Component {
 
     handlePress= ()=> {
       console.log("Key Pressed " + this.state.comment + " "+ this.state.starCount) 
-      fetch("http://10.40.32.165:5000/rate", {
+      fetch("http://10.40.56.86:5000/rate", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -144,7 +145,7 @@ export default class loc extends React.Component {
 
     async on_connect(emails){
 
-      var socket = new SockJS('http://10.40.32.165:5000/chat');
+      var socket = new SockJS('http://10.40.56.86:5000/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');
@@ -325,7 +326,7 @@ export default class loc extends React.Component {
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
       let sEmail = await AsyncStorage.getItem('email');
-      fetch("http://10.40.32.165:5000/acceptProviders", {
+      fetch("http://10.40.56.86:5000/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -357,7 +358,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSource = new EventSource("http://10.40.32.165:5000/requestCancelled", {
+        this.eventSource = new EventSource("http://10.40.56.86:5000/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -382,7 +383,7 @@ export default class loc extends React.Component {
       });
 
 
-        this.eventSource = new EventSource("http://10.40.32.165:5000/endRequest", {
+        this.eventSource = new EventSource("http://10.40.56.86:5000/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -426,7 +427,7 @@ export default class loc extends React.Component {
           console.log("fuck" , typeof(this.state.expertLevel))
           console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
 
-          fetch("http://10.40.32.165:8080/findProviders", {
+          fetch("http://10.40.56.86:5000/findProviders", {
             method: "POST",
             headers: {
               Accept: "application/json",
@@ -437,7 +438,8 @@ export default class loc extends React.Component {
               lat: this.state.latitude,
               lon: this.state.longitude,
               num_providers: 1,
-              expertLevel: this.state.expertLevel
+              expertLevel: this.state.expertLevel,
+              description: this.state.description,
             }),
             
           })
@@ -469,7 +471,7 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-          this.eventSource = new EventSource("http://10.40.32.165:8080/notifySeeker", {
+          this.eventSource = new EventSource("http://10.40.56.86:5000/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -502,7 +504,7 @@ export default class loc extends React.Component {
        <View style={styles.container}>
 
        <MapView
-              style={styles.map}
+              style={styles.map2}
               region={{
                 latitude: this.state.latitude,
                 longitude: this.state.longitude,
@@ -515,7 +517,7 @@ export default class loc extends React.Component {
         <Modal isVisible={this.state.isModalVisible}>
           <View style={{ flex: 1 }}>
             <FlatGrid
-                itemDimension={140}
+                itemDimension={160}
                 items={this.state.tot_provs}
                 style={styles.gridView}
                 renderItem={({ item, index }) => (
@@ -549,10 +551,10 @@ export default class loc extends React.Component {
             textContent={'Finding near providers...'}
             textStyle={{color: '#FFF'}}
             />
-           <Text style={{fontSize: 20, color: 'black', top: 70}}>Expert Level</Text>
+           <Text style={{fontSize: 20, color: 'black', top: 75}}>Expert Level</Text>
            <Picker
               selectedValue={this.state.expertLevel}
-              style={{height: 50, width: 100, paddingTop: 5, top: 75}}
+              style={{height: 50, width: 100, paddingTop: 5, top: 80}}
               onValueChange={(itemValue, itemIndex) =>
                 this.setState({expertLevel: itemValue})
               }>
@@ -560,6 +562,8 @@ export default class loc extends React.Component {
               <Picker.Item label="Medium" value = "2" />
               <Picker.Item label="High" value = "3" />
             </Picker>
+          <TextInput style={styles.input} placeholder="Description" placeholderTextColor='black' onChangeText={(description) => this.setState({description})}
+                value={this.state.description}></TextInput>  
           <Button full success style={styles.button} onPress={() => {this.postloc()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
           {/* <Button full success style={styles.button} onPress={() => {this.toggleRequestPage()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button> */}
        </View>
@@ -807,6 +811,17 @@ export default class loc extends React.Component {
     ...StyleSheet.absoluteFillObject,
     height: 400,
   },
+  input: {
+    //position: "absolute",
+    top: "35%",
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+    alignSelf: 'stretch',
+    justifyContent:'center',
+    alignItems:'center',
+    
+    color: 'black'
+  },
   text:{
     top: "30%",
     fontWeight: "bold",
@@ -848,10 +863,10 @@ export default class loc extends React.Component {
     alignSelf: 'stretch',
     alignItems: 'center',
     padding: 10,
-    paddingBottom: 10,
+    paddingBottom: 5,
     //backgroundColor: '#1990e5',
-    marginTop: 30,
-    top: "70%",
+    marginTop: 5,
+    top: "95%",
     //left: 148.53
   },
   buttonC:{

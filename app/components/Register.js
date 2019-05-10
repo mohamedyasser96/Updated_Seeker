@@ -5,6 +5,7 @@ import { Camera, Permissions } from 'expo';
 import { TextInput } from 'react-native-gesture-handler';
 
 import { Button } from 'native-base';
+import { bold } from 'ansi-colors';
 
 export default class App extends Component {
     static navigationOptions ={
@@ -68,7 +69,7 @@ export default class App extends Component {
 
     async register2(){
      try { 
-      let result = await fetch('http://10.40.32.165:5000/register/seeker', {
+      let result = await fetch('http://10.40.56.86:5000/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -101,7 +102,7 @@ export default class App extends Component {
 
           console.log("In reg face: ", data)
 
-        fetch('http://10.40.32.165:5000/saveImage', {
+        fetch('http://10.40.56.86:5000/saveImage', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -135,7 +136,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://10.40.32.165:5000/loginFacial', {
+        fetch('http://10.40.56.86:5000/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -230,7 +231,7 @@ export default class App extends Component {
       return (
         <KeyboardAvoidingView style={styles.root} behavior="padding" enabled>
           <View style={styles.rect} />
-          <Text style={styles.text}>Register</Text>
+          <Text style={styles.text}>Registration</Text>
             <TextInput style={styles.textinput} placeholder="Username" placeholderTextColor='black' onChangeText={(username) => this.setState({username})}
               value={this.state.username}>
             </TextInput>
@@ -295,7 +296,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(164,41,34,1)",
+    backgroundColor: "#42b3f4",
     paddingRight: 16,
     paddingLeft: 16,
     borderRadius: 5,
@@ -306,9 +307,11 @@ const styles = StyleSheet.create({
     backgroundColor: "transparent",
     left: "10.13%",
     top: "15.64%",
-    color: "rgba(243,240,240,1)",
-    fontSize: 23,
-    fontFamily: "AGaramondPro-Regular"
+    color: "#42b3f4",
+    fontSize: 26,
+    fontFamily: "AGaramondPro-Regular",
+    alignSelf: Center,
+    fontWeight: "bold",
   },
   image: {
     height: 300,
@@ -355,7 +358,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "rgba(164,41,34,1)",
+    backgroundColor: "#42b3f4",
     paddingRight: 16,
     paddingLeft: 16,
     //paddingBottom: 10,
