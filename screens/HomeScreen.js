@@ -66,7 +66,8 @@ export default class loc extends React.Component {
             base64Image: '',
             hasCameraPermission: null,
             spinner: false,
-            description: ''
+            description: '',
+            mycounter: 0
 
 
 
@@ -224,10 +225,14 @@ export default class loc extends React.Component {
 
     async triggerAlert(providers) {
       console.log("TRIGEER", providers);
-      this.state.tot_provs = providers
-      console.log(this.state.tot_provs),
-      this.toggleSpinner(),
-      this._toggleModal()
+      this.state.tot_provs = providers.providers
+      this.state.tempmessage = providers.message
+      console.log(this.state.tot_provs)
+
+      if (this.state.mycounter === 0) {
+        this._toggleModal()
+        this.state.mycounter = this.state.mycounter + 1
+      }
       //console.log(this.state)
 
     }
@@ -280,6 +285,11 @@ export default class loc extends React.Component {
        );
      }
 
+     async componentWillUnmount() {
+      await this.eventSource.removeAllListeners()
+      await this.eventSource.close()
+    }
+
      //Send loc every once in a while
      sendLocation = () =>{
 
@@ -310,14 +320,107 @@ export default class loc extends React.Component {
       );
        }
 
-    async acceptProvider(emails, item) {
+    // async acceptProvider(emails, item) {
+    //   // var emails = "asser1@email.com"
+
+    //   provInfo.uname = item.username,
+    //   provInfo.mobileNum = item.mobileNum,
+    //   provInfo.eta = item.eta
+
+
+    //   console.log("emaail", emails);
+    //   this.state.provEmail = emails;
+      
+    //   this.on_connect(emails);
+
+    //   // console.log("ind", this.global_ind);
+    //   let token = await AsyncStorage.getItem("token");
+    //   let sEmail = await AsyncStorage.getItem('email');
+    //   fetch("http://10.40.56.86:5000/acceptProviders", {
+    //     method: "POST",
+    //     headers: {
+    //       Accept: "application/json",
+    //       "Content-Type": "application/json",
+    //       Authorization: "Bearer " + token
+    //     },
+    //     body: JSON.stringify({
+    //       providerEmail: emails,
+    //       request_id: this.state.requestID,
+    //       seekerEmail: sEmail,
+
+    //     })
+    //   })
+    //     .then(response => response.text())
+    //     .then(responseJson => {
+    //       console.log("I am here bit",responseJson);
+    //       this.toggleRequestPage();
+    //       // Alert.alert(
+    //       //   'Success',
+    //       //   'Provider Henna@email.com on the way',
+    //       //   [
+    //       //     {text: 'OK', onPress: () => console.log('OK Pressed')},
+    //       //   ],
+    //       //   {cancelable: false},
+    //       // );
+    //     })
+    //     .catch(error => {
+    //       console.error(error);
+    //     });
+
+
+    //     this.eventSource = new EventSource("http://10.40.56.86:5000/requestCancelled", {
+    //     headers: {
+    //       Accept: "application/json",
+    //       "Content-Type": "application/json",
+    //       Authorization: "Bearer " + token
+    //     }
+    //   });
+
+    //   await this.eventSource.addEventListener('message', data => {
+    //     console.log("KHSDAHDJA ", data.data); // message
+    //     // var res_str = data.data.slice(1); 
+    //     // var res_json = JSON.parse(res_str);
+
+    //     Alert.alert(
+    //       'Cancelled',
+    //       data.data,
+    //       [
+    //         {text: 'OK', onPress: () => console.log('OK Pressed')},
+    //       ],
+    //       {cancelable: false},
+    //     );
+
+    //   });
+
+
+    //     this.eventSource = new EventSource("http://10.40.56.86:5000/endRequest", {
+    //     headers: {
+    //       Accept: "application/json",
+    //       "Content-Type": "application/json",
+    //       Authorization: "Bearer " + token
+    //     }
+    //   });
+
+    //   await this.eventSource.addEventListener('message', data => {
+    //     console.log(data.type); // message
+    //     // var res_str = data.data.slice(1); 
+    //     // var res_json = JSON.parse(res_str);
+    //     this.on_disconnect()
+        
+    //     Alert.alert(
+    //       'Provider Ended',
+    //       data.data,
+    //       [
+    //         {text: 'OK', onPress: () => {this.toggleRating()}},
+    //       ],
+    //       {cancelable: false},
+    //     );
+
+    //   });
+    // }
+
+    async acceptProvider(emails) {
       // var emails = "asser1@email.com"
-
-      provInfo.uname = item.username,
-      provInfo.mobileNum = item.mobileNum,
-      provInfo.eta = item.eta
-
-
       console.log("emaail", emails);
       this.state.provEmail = emails;
       
@@ -325,8 +428,8 @@ export default class loc extends React.Component {
 
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      let sEmail = await AsyncStorage.getItem('email');
-      fetch("http://10.40.56.86:5000/acceptProviders", {
+      let requestID = await AsyncStorage.getItem("request_id")
+      await fetch("http://10.40.48.248:5000/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -335,13 +438,12 @@ export default class loc extends React.Component {
         },
         body: JSON.stringify({
           providerEmail: emails,
-          request_id: this.state.requestID,
-          seekerEmail: sEmail,
-
+          request_id: this.state.requestID
         })
       })
         .then(response => response.text())
         .then(responseJson => {
+          this.state.mycounter = 0
           console.log("I am here bit",responseJson);
           this.toggleRequestPage();
           // Alert.alert(
@@ -358,7 +460,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSource = new EventSource("http://10.40.56.86:5000/requestCancelled", {
+        this.eventSourceCancel = new EventSource("http://10.40.48.248:5000/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -366,7 +468,7 @@ export default class loc extends React.Component {
         }
       });
 
-      await this.eventSource.addEventListener('message', data => {
+      await this.eventSourceCancel.addEventListener("message", data => {
         console.log("KHSDAHDJA ", data.data); // message
         // var res_str = data.data.slice(1); 
         // var res_json = JSON.parse(res_str);
@@ -380,10 +482,11 @@ export default class loc extends React.Component {
           {cancelable: false},
         );
 
+        this.eventSourceCancel.close()
       });
 
 
-        this.eventSource = new EventSource("http://10.40.56.86:5000/endRequest", {
+        this.eventSourceEnd = new EventSource("http://10.40.48.248:5000/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -391,7 +494,7 @@ export default class loc extends React.Component {
         }
       });
 
-      await this.eventSource.addEventListener('message', data => {
+      await this.eventSourceEnd.addEventListener("message", data => {
         console.log(data.type); // message
         // var res_str = data.data.slice(1); 
         // var res_json = JSON.parse(res_str);
@@ -405,13 +508,99 @@ export default class loc extends React.Component {
           ],
           {cancelable: false},
         );
-
+        this.eventSourceEnd.close()
       });
+
     }
   
+    // async postloc(){
+    //   this.toggleSpinner()
+    //   console.log("fuck type", typeof(this.state.expertLevel))
+    //   var flag = false;
+    //       try { 
+    //       // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
+    //       navigator.geolocation.getCurrentPosition(position => {
+    //         console.log(position["coords"]["latitude"]);
+    //         console.log(position["coords"]["longitude"]);
+    //         this.state.latitude = position["coords"]["latitude"];
+    //         this.state.longitude = position["coords"]["longitude"];
+    //         this.state.map.lat = position["coords"]["latitude"];
+    //         this.state.map.lon = position["coords"]["longitude"];
+    //       }, err => console.log(err));
+    //       let token = await AsyncStorage.getItem('token')
+    //       console.log("fuck" , typeof(this.state.expertLevel))
+    //       console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
+
+    //       fetch("http://10.40.56.86:5000/findProviders", {
+    //         method: "POST",
+    //         headers: {
+    //           Accept: "application/json",
+    //           "Content-Type": "application/json",
+    //           Authorization: "Bearer " + token
+    //         },
+    //         body: JSON.stringify({
+    //           lat: this.state.latitude,
+    //           lon: this.state.longitude,
+    //           num_providers: 1,
+    //           expertLevel: this.state.expertLevel,
+    //           description: this.state.description,
+    //         }),
+            
+    //       })
+    //         .then(response => response.text())
+    //         .then(responseJson => {
+    //           console.log("ghfhfh ", responseJson);
+    //           console.log(this.state.expertLevel)
+    //           if(responseJson.charAt(0) === 'U')
+    //             {
+    //               console.log('Tamaaaam')
+    //               this.postM(responseJson)
+    //             }
+    //           else{
+    //           var JSONres = JSON.parse(responseJson)
+    //           this.state.requestID = JSONres.requestID;
+    //           console.log("THIS IS REQ ID: ", JSONres.requestID)
+
+    //           }
+              
+              
+
+    //           //var strResp = JSON.stringify(responseJson);
+              
+              
+    //         }
+    //         )
+            
+    //         .catch(error => {
+    //           console.error(error);
+    //       });
+
+    //       this.eventSource = new EventSource("http://10.40.56.86:5000/notifySeeker", {
+    //     headers: {
+    //       Accept: "application/json",
+    //       "Content-Type": "application/json",
+    //       Authorization: "Bearer " + token
+    //     }
+    //   });
+
+    //   await this.eventSource.addEventListener("message", data =>{
+    //     console.log(data.type); // message
+    //     //if(data.type)
+    //     var res_str = data.data.slice(1); 
+    //     var res_json = JSON.parse(res_str);
+    //     console.log("This is the new output: ", res_json)
+    //     //this.state.requestID = res_json.requestID;
+    //     //console.log("THIS IS REQ ID: ", res_json.requestID)
+    //     this.triggerAlert(res_json);
+    //   });
+
+    //   } catch (error) {
+    //       console.log(error);
+    //       console.log('aywaaa')
+    //     };
+    //   }
+
     async postloc(){
-      this.toggleSpinner()
-      console.log("fuck type", typeof(this.state.expertLevel))
       var flag = false;
           try { 
           // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
@@ -424,10 +613,10 @@ export default class loc extends React.Component {
             this.state.map.lon = position["coords"]["longitude"];
           }, err => console.log(err));
           let token = await AsyncStorage.getItem('token')
-          console.log("fuck" , typeof(this.state.expertLevel))
-          console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
-
-          fetch("http://10.40.56.86:5000/findProviders", {
+          console.log("##############")
+          console.log(this.state.expertLevel)
+          console.log("##############")
+          await fetch("http://10.40.48.248:5000/findProviders", {
             method: "POST",
             headers: {
               Accept: "application/json",
@@ -435,28 +624,36 @@ export default class loc extends React.Component {
               Authorization: "Bearer " + token
             },
             body: JSON.stringify({
+              
               lat: this.state.latitude,
               lon: this.state.longitude,
               num_providers: 1,
-              expertLevel: this.state.expertLevel,
-              description: this.state.description,
+              expertLevel: this.state.expertLevel
             }),
             
           })
             .then(response => response.text())
             .then(responseJson => {
               console.log("ghfhfh ", responseJson);
-              console.log(this.state.expertLevel)
-              if(responseJson.charAt(0) === 'U')
-                {
-                  console.log('Tamaaaam')
-                  this.postM(responseJson)
-                }
+              console.log(Object.keys(JSON.parse(responseJson)))
+
+              let jsonResponse = JSON.parse(responseJson)
+              let keys = Object.keys(JSON.parse(responseJson))
+
+              if (keys.includes('message'))
+                this.postM(jsonResponse.message)
+              
+              // if(responseJson.charAt(0) === 'U')
+              //   {
+              //     console.log('Tamaaaam')
+              //     this.postM(responseJson)
+              //   }
               else{
               var JSONres = JSON.parse(responseJson)
               this.state.requestID = JSONres.requestID;
+              // AsyncStorage.setItem("request_id", JSONres.requestID)
               console.log("THIS IS REQ ID: ", JSONres.requestID)
-
+    
               }
               
               
@@ -471,7 +668,12 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-          this.eventSource = new EventSource("http://10.40.56.86:5000/notifySeeker", {
+      } catch (error) {
+          console.log(error);
+          console.log('aywaaa')
+        };
+
+        this.eventSource = new EventSource("http://10.40.48.248:5000/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -479,21 +681,23 @@ export default class loc extends React.Component {
         }
       });
 
-      await this.eventSource.addEventListener("message", data =>{
+      await this.eventSource.addEventListener("message", data => {
         console.log(data.type); // message
         //if(data.type)
+        console.log("##############")
+        console.log("##############")
+        console.log(data.data)
+        console.log("##############")
+        console.log("##############")
         var res_str = data.data.slice(1); 
         var res_json = JSON.parse(res_str);
         console.log("This is the new output: ", res_json)
         //this.state.requestID = res_json.requestID;
         //console.log("THIS IS REQ ID: ", res_json.requestID)
         this.triggerAlert(res_json);
+        this.eventSource.close()
       });
 
-      } catch (error) {
-          console.log(error);
-          console.log('aywaaa')
-        };
       }
 
    render() {
