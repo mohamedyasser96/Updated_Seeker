@@ -176,7 +176,7 @@ export default class AddPaymentForm extends React.Component {
        this.setC()
        this.DataObject = this.setData()
       //  console.log("THIS IS MY TOKEN", this._retrieveData())
-       let result = await fetch('http://10.40.59.113:5000/purchase', {
+       let result = await fetch('http://192.168.1.17:5000/purchase', {
        method: 'POST',
        headers: {
          Accept: 'application/json',

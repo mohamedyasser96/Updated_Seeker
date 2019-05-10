@@ -8,6 +8,7 @@ import SockJS from 'sockjs-client';
 import Stomp from "stompjs";
 import StarRating from 'react-native-star-rating';
 import {ImagePicker, Permissions} from 'expo';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 import FetchLocation from "../app/components/FetchLocation"
 import { Button , Icon} from 'native-base';
@@ -17,6 +18,7 @@ var img = null;
 var sesid = null;
 var items = [];
 var topic = null;
+var provInfo = { uname:'', phoneNum: '', eta: ''},
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
@@ -40,7 +42,7 @@ export default class loc extends React.Component {
             longitude: 31.0,
             isModalVisible: false,
             error: null,
-            expertLevel: '',
+            expertLevel: '1',
             // token: null,
             map:{
               lat: 0,
@@ -62,7 +64,8 @@ export default class loc extends React.Component {
             comment : "" ,
             provEmail: "",
             base64Image: '',
-            hasCameraPermission: null
+            hasCameraPermission: null,
+            spinner: false,
 
 
 
@@ -92,7 +95,7 @@ export default class loc extends React.Component {
 
     handlePress= ()=> {
       console.log("Key Pressed " + this.state.comment + " "+ this.state.starCount) 
-      fetch("http://10.40.59.113:5000/rate", {
+      fetch("http://192.168.1.17:5000/rate", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -141,7 +144,7 @@ export default class loc extends React.Component {
 
     async on_connect(emails){
 
-      var socket = new SockJS('http://10.40.59.113:5000/chat');
+      var socket = new SockJS('http://192.168.1.17:5000/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');
@@ -222,12 +225,20 @@ export default class loc extends React.Component {
       console.log("TRIGEER", providers);
       this.state.tot_provs = providers
       console.log(this.state.tot_provs),
+      this.toggleSpinner(),
       this._toggleModal()
       //console.log(this.state)
 
     }
 
     // Toggling Screens
+    toggleSpinner = () => {
+      this.setState({ spinner: !this.state.spinner });
+      // setTimeout(() => {
+      //   Alert.alert('Oops!', err.message);
+      // }, 100);
+    }
+      
 
     toggleRating = () => 
         this.setState({ RatingScreen: !this.state.RatingScreen})
@@ -298,8 +309,14 @@ export default class loc extends React.Component {
       );
        }
 
-    async acceptProvider(emails) {
+    async acceptProvider(emails, item) {
       // var emails = "asser1@email.com"
+
+      provInfo.uname = item.username,
+      provInfo.mobileNum = item.mobileNum,
+      provInfo.eta = item.eta
+
+
       console.log("emaail", emails);
       this.state.provEmail = emails;
       
@@ -307,7 +324,8 @@ export default class loc extends React.Component {
 
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      fetch("http://10.40.59.113:5000/acceptProviders", {
+      let sEmail = await AsyncStorage.getItem('email');
+      fetch("http://192.168.1.17:5000/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -316,7 +334,9 @@ export default class loc extends React.Component {
         },
         body: JSON.stringify({
           providerEmail: emails,
-          request_id: this.state.requestID
+          request_id: this.state.requestID,
+          seekerEmail: sEmail,
+
         })
       })
         .then(response => response.text())
@@ -337,7 +357,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSource = new EventSource("http://10.40.59.113:5000/requestCancelled", {
+        this.eventSource = new EventSource("http://192.168.1.17:5000/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -362,7 +382,7 @@ export default class loc extends React.Component {
       });
 
 
-        this.eventSource = new EventSource("http://10.40.59.113:5000/endRequest", {
+        this.eventSource = new EventSource("http://192.168.1.17:5000/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -389,6 +409,7 @@ export default class loc extends React.Component {
     }
   
     async postloc(){
+      this.toggleSpinner()
       console.log("fuck type", typeof(this.state.expertLevel))
       var flag = false;
           try { 
@@ -405,7 +426,7 @@ export default class loc extends React.Component {
           console.log("fuck" , typeof(this.state.expertLevel))
           console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
 
-          fetch("http://10.40.59.113:5000/findProviders", {
+          fetch("http://192.168.1.17:8080/findProviders", {
             method: "POST",
             headers: {
               Accept: "application/json",
@@ -413,8 +434,8 @@ export default class loc extends React.Component {
               Authorization: "Bearer " + token
             },
             body: JSON.stringify({
-              lat: 30.0,
-              lon: 30.0,
+              lat: this.state.latitude,
+              lon: this.state.longitude,
               num_providers: 1,
               expertLevel: this.state.expertLevel
             }),
@@ -448,7 +469,7 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-          this.eventSource = new EventSource("http://10.40.59.113:5000/notifySeeker", {
+          this.eventSource = new EventSource("http://192.168.1.17:8080/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -499,14 +520,14 @@ export default class loc extends React.Component {
                 style={styles.gridView}
                 renderItem={({ item, index }) => (
                   <View style={[styles.itemContainer, { backgroundColor: '#2980b9'}]}>
-                  <Text style={styles.itemName}>{'Email: ' + item.email}</Text>
+                  {/* <Text style={styles.itemName}>{'Email: ' + item.email}</Text> */}
                     <Text style={styles.itemName}>{'Dist: ' + item.distance}</Text>
                     <Text style={styles.itemName}>{'ETA: ' + item.eta}</Text>
-                    {/* <Text style={styles.itemName}>{'UN: ' + item.username}</Text> */}
-                    <Text style={styles.itemName}>{'MN: ' + item.mobileNumber}</Text>
+                    <Text style={styles.itemName}>{'UN: ' + item.username}</Text>
+                    <Text style={styles.itemName}>{'MN: ' + item.mobileNum}</Text>
                     <Text style={styles.itemName}>{'Rating:' + item.rating}</Text>
 
-                    <Button transparent success onPress = {() => {this.acceptProvider(item.email)}}><Text>Select </Text></Button>
+                    <Button transparent success onPress = {() => {this.acceptProvider(item.email, item)}}><Text>Select </Text></Button>
                     {/* <Button onPress = {() => {this.change()}}><Text>Chat </Text></Button> */}
                     {/* <Text style={styles.itemCode}>{item.code}</Text> */}
                   </View>
@@ -523,6 +544,11 @@ export default class loc extends React.Component {
             </Button>
           </View>
         </Modal>
+          <Spinner
+            visible={this.state.spinner}
+            textContent={'Finding near providers...'}
+            textStyle={{color: '#FFF'}}
+            />
            <Text style={{fontSize: 20, color: 'black', top: 70}}>Expert Level</Text>
            <Picker
               selectedValue={this.state.expertLevel}
@@ -777,6 +803,10 @@ export default class loc extends React.Component {
     ...StyleSheet.absoluteFillObject,
     height: 630,
   },
+  map2: {
+    ...StyleSheet.absoluteFillObject,
+    height: 400,
+  },
   text:{
     top: "30%",
     fontWeight: "bold",
@@ -792,7 +822,7 @@ export default class loc extends React.Component {
     justifyContent: 'flex-end',
     borderRadius: 30,
     padding: 10,
-    height: 180,
+    height: 190,
   },
   itemName: {
     fontSize: 14,

@@ -29,7 +29,7 @@ export default class ImagePickerExample extends React.Component {
     let token = await AsyncStorage.getItem("token");
 
     console.log(token)
-    fetch("http://10.40.59.113:5000/seekerHistory", {
+    fetch("http://192.168.1.17:5000/seekerHistory", {
       method: "POST",
       headers: {
         Accept: "application/json",

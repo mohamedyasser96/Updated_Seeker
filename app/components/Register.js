@@ -68,7 +68,7 @@ export default class App extends Component {
 
     async register2(){
      try { 
-      let result = await fetch('http://10.40.59.113:5000/register/seeker', {
+      let result = await fetch('http://192.168.1.17:5000/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -101,7 +101,7 @@ export default class App extends Component {
 
           console.log("In reg face: ", data)
 
-        fetch('http://10.40.59.113:5000/saveImage', {
+        fetch('http://192.168.1.17:5000/saveImage', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -135,7 +135,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://10.40.59.113:5000/loginFacial', {
+        fetch('http://192.168.1.17:5000/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -231,16 +231,16 @@ export default class App extends Component {
         <KeyboardAvoidingView style={styles.root} behavior="padding" enabled>
           <View style={styles.rect} />
           <Text style={styles.text}>Register</Text>
-            <TextInput style={styles.textinput} placeholder="Username" placeholderTextColor='#fff' onChangeText={(username) => this.setState({username})}
+            <TextInput style={styles.textinput} placeholder="Username" placeholderTextColor='black' onChangeText={(username) => this.setState({username})}
               value={this.state.username}>
             </TextInput>
-            <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='#fff' onChangeText={(email) => this.setState({email})}
+            <TextInput style={styles.textinput} placeholder="Email" placeholderTextColor='black' onChangeText={(email) => this.setState({email})}
               value={this.state.email}>
             </TextInput>
-            <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='#fff' onChangeText={(password) => this.setState({password})}
+            <TextInput style={styles.textinput} placeholder="Password" secureTextEntry={true} placeholderTextColor='black' onChangeText={(password) => this.setState({password})}
               value={this.state.password}>
             </TextInput>
-            <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='#fff' onChangeText={(mobileNumber) => this.setState({mobileNumber})}
+            <TextInput style={styles.textinput} placeholder="Phone Number" placeholderTextColor='black' onChangeText={(mobileNumber) => this.setState({mobileNumber})}
               value={this.state.mobileNumber}>
             </TextInput>
             {/* <Center horizontal>
@@ -283,7 +283,7 @@ const styles = StyleSheet.create({
     top: 0,
     left: 0,
     position: "absolute",
-    backgroundColor: "rgba(2, 84, 3,1)",
+    backgroundColor: "white",
     opacity: 1
   },
   button8: {
@@ -320,8 +320,8 @@ const styles = StyleSheet.create({
     alignSelf: 'stretch',
     height: 40,
     marginBottom: 30,
-    color: '#fff',
-    borderBottomColor: '#f8f8f8',
+    color: 'black',
+    borderBottomColor: 'black',
     borderBottomWidth: 1,
   },
   input: {
