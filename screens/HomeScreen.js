@@ -18,7 +18,7 @@ var img = null;
 var sesid = null;
 var items = [];
 var topic = null;
-var provInfo = { uname:'', phoneNum: '', eta: ''},
+var provInfo = { uname:'', phoneNum: '', eta: ''};
 const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
@@ -95,7 +95,7 @@ export default class loc extends React.Component {
 
     handlePress= ()=> {
       console.log("Key Pressed " + this.state.comment + " "+ this.state.starCount) 
-      fetch("http://192.168.1.17:5000/rate", {
+      fetch("http://10.40.32.165:5000/rate", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -144,7 +144,7 @@ export default class loc extends React.Component {
 
     async on_connect(emails){
 
-      var socket = new SockJS('http://192.168.1.17:5000/chat');
+      var socket = new SockJS('http://10.40.32.165:5000/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');
@@ -325,7 +325,7 @@ export default class loc extends React.Component {
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
       let sEmail = await AsyncStorage.getItem('email');
-      fetch("http://192.168.1.17:5000/acceptProviders", {
+      fetch("http://10.40.32.165:5000/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -357,7 +357,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSource = new EventSource("http://192.168.1.17:5000/requestCancelled", {
+        this.eventSource = new EventSource("http://10.40.32.165:5000/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -382,7 +382,7 @@ export default class loc extends React.Component {
       });
 
 
-        this.eventSource = new EventSource("http://192.168.1.17:5000/endRequest", {
+        this.eventSource = new EventSource("http://10.40.32.165:5000/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -426,7 +426,7 @@ export default class loc extends React.Component {
           console.log("fuck" , typeof(this.state.expertLevel))
           console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
 
-          fetch("http://192.168.1.17:8080/findProviders", {
+          fetch("http://10.40.32.165:8080/findProviders", {
             method: "POST",
             headers: {
               Accept: "application/json",
@@ -469,7 +469,7 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-          this.eventSource = new EventSource("http://192.168.1.17:8080/notifySeeker", {
+          this.eventSource = new EventSource("http://10.40.32.165:8080/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -910,7 +910,6 @@ container2: {
   //flex: 1,
 },
 container3: {
-  
   flex: 1,
 },
 button2:{
@@ -920,7 +919,7 @@ button2:{
 },
 bottom:{
   flex: 1,
-    justifyContent: 'flex-end',
+  justifyContent: 'flex-end',
     //marginBottom: 36
   
 }

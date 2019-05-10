@@ -48,7 +48,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://192.168.1.17:5000/loginFacial', {
+        fetch('http://10.40.32.165:5000/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -122,7 +122,7 @@ export default class App extends Component {
       async register2()
       {
         try { 
-         let result = await fetch('http://192.168.1.17:8080/login/seeker', {
+         let result = await fetch('http://10.40.32.165:8080/login/seeker', {
          method: 'POST',
          headers: {
            Accept: 'application/json',
@@ -238,207 +238,30 @@ export default class App extends Component {
   }
 }
 
-const styles = StyleSheet.create({
-  root: {
-    backgroundColor: "white",
-    flex: 1,
-    alignSelf: 'stretch',
-     paddingLeft:60,
-     paddingRight:60,
-     alignItems: 'center',
-     justifyContent: 'center',
-  },
-  bcont2: {
-    fontSize: 15,
-    fontWeight: "500",
-    fontFamily: "Roboto",
-    color: "#fff"
-  },
-  rect: {
-    height: '80%',
-    width: '200%',
-    top: 0,
-    left: 0,
-    position: "absolute",
-    backgroundColor: "white",
-    opacity: 1
-  },
-  button8: {
-    top: '89%',
-    position: "absolute",
-    height: 44,
-    width: 130,
-    left: "32.8%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(164,41,34,1)",
-    paddingRight: 16,
-    paddingLeft: 16,
-    borderRadius: 5,
-    opacity: 0.91
-  },
-  text: {
-    position: "absolute",
-    backgroundColor: "transparent",
-    left: "10.13%",
-    top: "15.64%",
-    color: "rgba(243,240,240,1)",
-    fontSize: 23,
-    fontFamily: "AGaramondPro-Regular"
-  },
-  image: {
-    height: 300,
-    width: 300,
-    position: "absolute",
-    top: "17.49%"
-  },
-  textinput:{
-    alignSelf: 'stretch',
-    height: 40,
-    marginBottom: 30,
-    color: 'black',
-    borderBottomColor: 'black',
-    borderBottomWidth: 1,
-  },
-  input: {
-    //position: "absolute",
-    top: "65.49%",
-    borderBottomColor: '#f8f8f8',
-    borderBottomWidth: 1,
-    alignSelf: 'stretch',
-    justifyContent:'center',
-    alignItems:'center',
-    marginLeft: 40,
-    marginRight:60
-  },
-  input2: {
-    //position: "absolute",
-    top: "68.49%",
-    borderBottomColor: '#f8f8f8',
-    borderBottomWidth: 1,
-    alignSelf: 'stretch',
-    justifyContent:'center',
-    alignItems:'center',
-    marginLeft: 40,
-    marginRight:60
-  },
-  button7: {
-    top: '82.5%',
-    position: "absolute",
-    height: 44,
-    width: 130,
-    left: "32.8%",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "rgba(164,41,34,1)",
-    paddingRight: 16,
-    paddingLeft: 16,
-    //paddingBottom: 10,
-    borderRadius: 5,
-    opacity: 0.91
-  },
-  button9: {
-    top: '90%',
-    position: "absolute",
-    height: 44,
-    left: "32.8%"
-  },
-  text2: {
-    top: '88%',
-    position: "absolute",
-    backgroundColor: "transparent",
-    left: "32.8%"
-  }
-});
-
 // const styles = StyleSheet.create({
 //   root: {
 //     backgroundColor: "white",
-//     flex: 1
-//   },
-//   rect: {
-//     height: '80%',
-//     width: '100%',
-//     top: 0,
-//     left: 0,
-//     position: "absolute",
-//     backgroundColor: "rgba(2,84,3,1)",
-//     opacity: 1
-//   },
-//   Broot: {
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     backgroundColor: "transparent",
-//     borderRadius: 5
-//   },
-//   buttonContent: {
-//     fontSize: 13,
-//     fontWeight: "500",
-//     fontFamily: "Roboto",
-//     color: "#000"
+//     flex: 1,
+//     alignSelf: 'stretch',
+//      paddingLeft:60,
+//      paddingRight:60,
+//      alignItems: 'center',
+//      justifyContent: 'center',
 //   },
 //   bcont2: {
-//     fontSize: 17,
+//     fontSize: 15,
 //     fontWeight: "500",
 //     fontFamily: "Roboto",
 //     color: "#fff"
 //   },
-//   text: {
+//   rect: {
+//     height: '80%',
+//     width: '200%',
+//     top: 0,
+//     left: 0,
 //     position: "absolute",
-//     backgroundColor: "transparent",
-//     left: "10.13%",
-//     top: "15.64%",
-//     color: "rgba(243,240,240,1)",
-//     fontSize: 16,
-//     fontFamily: "AGaramondPro-Regular"
-//   },
-//   image: {
-//     height: 300,
-//     width: 300,
-//     position: "absolute",
-//     top: "17.49%"
-//   },
-//   input: {
-//     //position: "absolute",
-//     top: "65.49%",
-//     borderBottomColor: '#f8f8f8',
-//     borderBottomWidth: 1,
-//     alignSelf: 'stretch',
-//     justifyContent:'center',
-//     alignItems:'center',
-//     marginLeft: 40,
-//     marginRight:60,
-//     color: 'white'
-//   },
-//   input2: {
-//     //position: "absolute",
-//     top: "68.49%",
-//     borderBottomColor: '#f8f8f8',
-//     borderBottomWidth: 1,
-//     alignSelf: 'stretch',
-//     justifyContent:'center',
-//     alignItems:'center',
-//     marginLeft: 40,
-//     marginRight:60,
-//     color: 'white'
-//   },
-//   button7: {
-//     top: '82.5%',
-//     position: "absolute",
-//     height: 44,
-//     width: 130,
-//     left: "32.8%",
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     backgroundColor: "rgba(164,41,34,1)",
-//     paddingRight: 16,
-//     paddingLeft: 16,
-//     borderRadius: 5,
-//     opacity: 0.91
+//     backgroundColor: "white",
+//     opacity: 1
 //   },
 //   button8: {
 //     top: '89%',
@@ -455,21 +278,198 @@ const styles = StyleSheet.create({
 //     borderRadius: 5,
 //     opacity: 0.91
 //   },
+//   text: {
+//     position: "absolute",
+//     backgroundColor: "transparent",
+//     left: "10.13%",
+//     top: "15.64%",
+//     color: "rgba(243,240,240,1)",
+//     fontSize: 23,
+//     fontFamily: "AGaramondPro-Regular"
+//   },
+//   image: {
+//     height: 300,
+//     width: 300,
+//     position: "absolute",
+//     top: "17.49%"
+//   },
+//   textinput:{
+//     alignSelf: 'stretch',
+//     height: 40,
+//     marginBottom: 30,
+//     color: 'black',
+//     borderBottomColor: 'black',
+//     borderBottomWidth: 1,
+//   },
+//   input: {
+//     //position: "absolute",
+//     top: "65.49%",
+//     borderBottomColor: '#f8f8f8',
+//     borderBottomWidth: 1,
+//     alignSelf: 'stretch',
+//     justifyContent:'center',
+//     alignItems:'center',
+//     marginLeft: 40,
+//     marginRight:60
+//   },
+//   input2: {
+//     //position: "absolute",
+//     top: "68.49%",
+//     borderBottomColor: '#f8f8f8',
+//     borderBottomWidth: 1,
+//     alignSelf: 'stretch',
+//     justifyContent:'center',
+//     alignItems:'center',
+//     marginLeft: 40,
+//     marginRight:60
+//   },
+//   button7: {
+//     top: '82.5%',
+//     position: "absolute",
+//     height: 44,
+//     width: 130,
+//     left: "32.8%",
+//     flexDirection: "row",
+//     alignItems: "center",
+//     justifyContent: "center",
+//     backgroundColor: "rgba(164,41,34,1)",
+//     paddingRight: 16,
+//     paddingLeft: 16,
+//     //paddingBottom: 10,
+//     borderRadius: 5,
+//     opacity: 0.91
+//   },
 //   button9: {
 //     top: '90%',
 //     position: "absolute",
 //     height: 44,
-//     left: "9.8%",
-//     flexDirection: "row",
-//     alignItems: "center",
-//     justifyContent: "center",
-//     backgroundColor: "transparent",
-//     borderRadius: 5
+//     left: "32.8%"
 //   },
 //   text2: {
-//     top: '89%',
+//     top: '88%',
 //     position: "absolute",
 //     backgroundColor: "transparent",
-//     left: "8.8%"
+//     left: "32.8%"
 //   }
 // });
+
+const styles = StyleSheet.create({
+  root: {
+    backgroundColor: "white",
+    flex: 1
+  },
+  rect: {
+    height: '80%',
+    width: '100%',
+    top: 0,
+    left: 0,
+    position: "absolute",
+    backgroundColor: "white",
+    opacity: 1
+  },
+  Broot: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    borderRadius: 5
+  },
+  buttonContent: {
+    fontSize: 13,
+    fontWeight: "500",
+    fontFamily: "Roboto",
+    color: "#000"
+  },
+  bcont2: {
+    fontSize: 17,
+    fontWeight: "500",
+    fontFamily: "Roboto",
+    color: "#fff"
+  },
+  text: {
+    position: "absolute",
+    backgroundColor: "transparent",
+    left: "10.13%",
+    top: "15.64%",
+    color: "black",
+    fontSize: 16,
+    fontFamily: "AGaramondPro-Regular"
+  },
+  image: {
+    height: 300,
+    width: 300,
+    position: "absolute",
+    top: "17.49%"
+  },
+  input: {
+    //position: "absolute",
+    top: "65.49%",
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+    alignSelf: 'stretch',
+    justifyContent:'center',
+    alignItems:'center',
+    marginLeft: 40,
+    marginRight:60,
+    color: '#42b3f4'
+  },
+  input2: {
+    //position: "absolute",
+    top: "68.49%",
+    borderBottomColor: 'black',
+    borderBottomWidth: 1,
+    alignSelf: 'stretch',
+    justifyContent:'center',
+    alignItems:'center',
+    marginLeft: 40,
+    marginRight:60,
+    color: 'white'
+  },
+  button7: {
+    top: '82.5%',
+    position: "absolute",
+    height: 44,
+    width: 130,
+    left: "32.8%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#42b3f4",
+    paddingRight: 16,
+    paddingLeft: 16,
+    borderRadius: 5,
+    opacity: 0.91
+  },
+  button8: {
+    top: '89%',
+    position: "absolute",
+    height: 44,
+    width: 130,
+    left: "32.8%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#42b3f4",
+    paddingRight: 16,
+    paddingLeft: 16,
+    borderRadius: 5,
+    opacity: 0.91
+  },
+  button9: {
+    top: '90%',
+    position: "absolute",
+    height: 44,
+    left: "9.8%",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "transparent",
+    borderRadius: 5
+  },
+  text2: {
+    top: '89%',
+    position: "absolute",
+    backgroundColor: "transparent",
+    left: "8.8%"
+  }
+});
