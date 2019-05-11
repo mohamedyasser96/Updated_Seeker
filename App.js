@@ -17,8 +17,14 @@ import FetchLocation from "./app/components/FetchLocation"
     Second: {screen: SecondScreen},
     Main: {screen: MainScreen},
     Pay: {screen: Payment},
-
-  });
+  },
+    {
+      headerMode: 'none',
+      navigationOptions: {
+        header: null
+      }
+    }
+  );
   const App = createAppContainer(MainNavigator);
 
   export default App;

@@ -9,6 +9,7 @@ import Stomp from "stompjs";
 import StarRating from 'react-native-star-rating';
 import {ImagePicker, Permissions} from 'expo';
 import Spinner from 'react-native-loading-spinner-overlay';
+import { NavigationActions } from 'react-navigation'
 
 import FetchLocation from "../app/components/FetchLocation"
 import { Button , Icon} from 'native-base';
@@ -23,6 +24,12 @@ const screenWidth = Math.round(Dimensions.get('window').width);
 const screenHeight = Math.round(Dimensions.get('window').height);
 
 export default class loc extends React.Component {
+
+  static navigationOptions = {
+    header: {
+      visible: false,
+    }
+  }
   _retrieveData = async () => {
     try {
       const value = await AsyncStorage.getItem('token');
@@ -68,10 +75,6 @@ export default class loc extends React.Component {
             spinner: false,
             description: '',
             mycounter: 0
-
-
-
-            
         };
 
         this.change = this.change.bind(this);
@@ -79,6 +82,8 @@ export default class loc extends React.Component {
         
         setInterval(() => (
           this.setState({item:items})), 1000);
+        
+        
         
         
 
@@ -288,6 +293,10 @@ export default class loc extends React.Component {
      async componentWillUnmount() {
       await this.eventSource.removeAllListeners()
       await this.eventSource.close()
+      await this.eventSourceCancel.removeAllListeners()
+      await this.eventSourceCancel.close()
+      await this.eventSourceEnd.removeAllListeners()
+      await this.eventSourceEnd.close()
     }
 
      //Send loc every once in a while
@@ -419,16 +428,23 @@ export default class loc extends React.Component {
     //   });
     // }
 
-    async acceptProvider(emails) {
+    async acceptProvider(emails, item) {
       // var emails = "asser1@email.com"
       console.log("emaail", emails);
       this.state.provEmail = emails;
+
+      console.log("This is item: ", item);
+
+      provInfo.uname = item.username,
+      provInfo.mobileNum = item.mobileNum,
+      provInfo.eta = item.eta
+
+      console.log("This is prov: ", provInfo)
       
       this.on_connect(emails);
 
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      let requestID = await AsyncStorage.getItem("request_id")
       await fetch("http://10.40.48.248:5000/acceptProviders", {
         method: "POST",
         headers: {
@@ -460,7 +476,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSourceCancel = new EventSource("http://10.40.48.248:5000/requestCancelled", {
+        this.eventSourceCancel = await new EventSource("http://10.40.48.248:5000/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -486,7 +502,7 @@ export default class loc extends React.Component {
       });
 
 
-        this.eventSourceEnd = new EventSource("http://10.40.48.248:5000/endRequest", {
+        this.eventSourceEnd = await new EventSource("http://10.40.48.248:5000/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -575,7 +591,7 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-          this.eventSource = new EventSource("http://10.40.48.248:5000/notifySeeker", {
+          this.eventSource = await new EventSource("http://10.40.48.248:5000/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -731,7 +747,7 @@ export default class loc extends React.Component {
             <View style={styles.container}>
 
                 <MapView
-                        style={styles.map}
+                        style={styles.map2}
                         region={{
                           latitude: this.state.latitude,
                           longitude: this.state.longitude,
@@ -742,8 +758,37 @@ export default class loc extends React.Component {
                         <Marker coordinate={this.provs} pinColor='#417df4'/>
                   </MapView>
                   {/* <Text style={{fontSize: 20, color: 'black', top: '50%'}}>On Request</Text> */}
-                <Button full success style={styles.button} onPress={() => {this.change()}} ><Text style={{color:'#ffffff'}}>CHAT</Text></Button>
-                <Button full success style={styles.button} onPress={() => {this._toggleModal()}} ><Text style={{color:'#ffffff'}}>CANCEL</Text></Button>
+                {/* <Button full success style={styles.button} onPress={() => {this.change()}} ><Text style={{color:'#ffffff'}}>CHAT</Text></Button>
+                <Button full success style={styles.button} onPress={() => {this._toggleModal()}} ><Text style={{color:'#ffffff'}}>CANCEL</Text></Button> */}
+                <View  style={{
+                  flex: 1,
+                  marginTop:screenHeight*0.1,
+                  backgroundColor: 'transparent',
+                  flexDirection: 'row',
+                }} >
+                        <Button rounded style={{
+                            alignSelf: 'flex-end',
+                            alignItems: 'center',
+                            marginLeft:screenWidth*0.03,
+                            backgroundColor: '#42b3f4'
+                          }}
+                          onPress={() => {this.change()}}
+          
+                          >
+                      <Text>  Chat   </Text>
+                    </Button>
+          
+                    <Button full rounded  style={{
+                            alignSelf: 'flex-end',
+                            alignItems: 'center',
+                            marginLeft:screenWidth*0.03,
+                            backgroundColor: '#2fa1e2'
+                          }}
+                          onPress={() => {this._toggleModal()}}
+                          >
+                      <Text>   Cancel   </Text>
+                    </Button>
+            </View>
 
             </View>
      );
@@ -788,7 +833,7 @@ export default class loc extends React.Component {
                     alignSelf: 'flex-end',
                     alignItems: 'center',
                     marginLeft:screenWidth*0.03,
-                    backgroundColor: '42b3f4'
+                    backgroundColor: '#42b3f4'
                   }}
                   onPress={this.sendMessage}
   
@@ -800,7 +845,7 @@ export default class loc extends React.Component {
                     alignSelf: 'flex-end',
                     alignItems: 'center',
                     marginLeft:screenWidth*0.03,
-                    backgroundColor: '2fa1e2'
+                    backgroundColor: '#2fa1e2'
                   }}
                   onPress={this.sendImage}
                   >
@@ -811,15 +856,16 @@ export default class loc extends React.Component {
                     alignSelf: 'flex-end',
                     alignItems: 'center',
                     marginLeft:screenWidth*0.03,
-                    backgroundColor: '2591ce'
+                    backgroundColor: '#2591ce'
                   }}
                   onPress={this.pickImage}
                   >
               <Text>   Attach   </Text>
             </Button>
-            <Button full rounded danger style={{
+            <Button full rounded style={{
                     alignSelf: 'flex-end',
                     alignItems: 'center',
+                    backgroundColor: '#2591ce',
                   }}
                   onPress={() => {this.change()}}
                   >
@@ -916,11 +962,11 @@ export default class loc extends React.Component {
   },
   map2: {
     ...StyleSheet.absoluteFillObject,
-    height: 400,
+    height: 500,
   },
   input: {
     //position: "absolute",
-    top: "35%",
+    top: "30%",
     borderBottomColor: 'black',
     borderBottomWidth: 1,
     alignSelf: 'stretch',
@@ -973,7 +1019,7 @@ export default class loc extends React.Component {
     paddingBottom: 5,
     backgroundColor: '#42b3f4',
     marginTop: 5,
-    top: "95%",
+    top: "98%",
     //left: 148.53
   },
   buttonC:{

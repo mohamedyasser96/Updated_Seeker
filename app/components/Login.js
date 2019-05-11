@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
     alignItems:'center',
     marginLeft: 40,
     marginRight:60,
-    color: 'white'
+    color: '#42b3f4'
   },
   button7: {
     top: '82.5%',
