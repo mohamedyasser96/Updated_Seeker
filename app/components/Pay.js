@@ -176,7 +176,7 @@ export default class AddPaymentForm extends React.Component {
        this.setC()
        this.DataObject = this.setData()
       //  console.log("THIS IS MY TOKEN", this._retrieveData())
-       let result = await fetch('http://10.40.56.86:5000/purchase', {
+       let result = await fetch('http://10.40.48.248:5000/purchase', {
        method: 'POST',
        headers: {
          Accept: 'application/json',
@@ -338,7 +338,7 @@ export default class AddPaymentForm extends React.Component {
           />
 
           <Button full danger style={styles.button} onPress={() => {this.postPay()}} >
-                <Text style={styles.btntext}> Purchase </Text>
+                <Text style={styles.btntext}> PAY </Text>
           </Button> 
       </View>
       </ScrollView>

@@ -97,7 +97,7 @@ export default class loc extends React.Component {
 
     handlePress= ()=> {
       console.log("Key Pressed " + this.state.comment + " "+ this.state.starCount) 
-      fetch("http://10.40.56.86:5000/rate", {
+      fetch("http://10.40.48.248:5000/rate", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -146,7 +146,7 @@ export default class loc extends React.Component {
 
     async on_connect(emails){
 
-      var socket = new SockJS('http://10.40.56.86:5000/chat');
+      var socket = new SockJS('http://10.40.48.248:5000/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');
@@ -336,7 +336,7 @@ export default class loc extends React.Component {
     //   // console.log("ind", this.global_ind);
     //   let token = await AsyncStorage.getItem("token");
     //   let sEmail = await AsyncStorage.getItem('email');
-    //   fetch("http://10.40.56.86:5000/acceptProviders", {
+    //   fetch("http://10.40.48.248:5000/acceptProviders", {
     //     method: "POST",
     //     headers: {
     //       Accept: "application/json",
@@ -368,7 +368,7 @@ export default class loc extends React.Component {
     //     });
 
 
-    //     this.eventSource = new EventSource("http://10.40.56.86:5000/requestCancelled", {
+    //     this.eventSource = new EventSource("http://10.40.48.248:5000/requestCancelled", {
     //     headers: {
     //       Accept: "application/json",
     //       "Content-Type": "application/json",
@@ -393,7 +393,7 @@ export default class loc extends React.Component {
     //   });
 
 
-    //     this.eventSource = new EventSource("http://10.40.56.86:5000/endRequest", {
+    //     this.eventSource = new EventSource("http://10.40.48.248:5000/endRequest", {
     //     headers: {
     //       Accept: "application/json",
     //       "Content-Type": "application/json",
@@ -513,94 +513,9 @@ export default class loc extends React.Component {
 
     }
   
-    // async postloc(){
-    //   this.toggleSpinner()
-    //   console.log("fuck type", typeof(this.state.expertLevel))
-    //   var flag = false;
-    //       try { 
-    //       // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
-    //       navigator.geolocation.getCurrentPosition(position => {
-    //         console.log(position["coords"]["latitude"]);
-    //         console.log(position["coords"]["longitude"]);
-    //         this.state.latitude = position["coords"]["latitude"];
-    //         this.state.longitude = position["coords"]["longitude"];
-    //         this.state.map.lat = position["coords"]["latitude"];
-    //         this.state.map.lon = position["coords"]["longitude"];
-    //       }, err => console.log(err));
-    //       let token = await AsyncStorage.getItem('token')
-    //       console.log("fuck" , typeof(this.state.expertLevel))
-    //       console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
-
-    //       fetch("http://10.40.56.86:5000/findProviders", {
-    //         method: "POST",
-    //         headers: {
-    //           Accept: "application/json",
-    //           "Content-Type": "application/json",
-    //           Authorization: "Bearer " + token
-    //         },
-    //         body: JSON.stringify({
-    //           lat: this.state.latitude,
-    //           lon: this.state.longitude,
-    //           num_providers: 1,
-    //           expertLevel: this.state.expertLevel,
-    //           description: this.state.description,
-    //         }),
-            
-    //       })
-    //         .then(response => response.text())
-    //         .then(responseJson => {
-    //           console.log("ghfhfh ", responseJson);
-    //           console.log(this.state.expertLevel)
-    //           if(responseJson.charAt(0) === 'U')
-    //             {
-    //               console.log('Tamaaaam')
-    //               this.postM(responseJson)
-    //             }
-    //           else{
-    //           var JSONres = JSON.parse(responseJson)
-    //           this.state.requestID = JSONres.requestID;
-    //           console.log("THIS IS REQ ID: ", JSONres.requestID)
-
-    //           }
-              
-              
-
-    //           //var strResp = JSON.stringify(responseJson);
-              
-              
-    //         }
-    //         )
-            
-    //         .catch(error => {
-    //           console.error(error);
-    //       });
-
-    //       this.eventSource = new EventSource("http://10.40.56.86:5000/notifySeeker", {
-    //     headers: {
-    //       Accept: "application/json",
-    //       "Content-Type": "application/json",
-    //       Authorization: "Bearer " + token
-    //     }
-    //   });
-
-    //   await this.eventSource.addEventListener("message", data =>{
-    //     console.log(data.type); // message
-    //     //if(data.type)
-    //     var res_str = data.data.slice(1); 
-    //     var res_json = JSON.parse(res_str);
-    //     console.log("This is the new output: ", res_json)
-    //     //this.state.requestID = res_json.requestID;
-    //     //console.log("THIS IS REQ ID: ", res_json.requestID)
-    //     this.triggerAlert(res_json);
-    //   });
-
-    //   } catch (error) {
-    //       console.log(error);
-    //       console.log('aywaaa')
-    //     };
-    //   }
-
     async postloc(){
+      //this.toggleSpinner()
+      console.log("fuck type", typeof(this.state.expertLevel))
       var flag = false;
           try { 
           // console.log('BHEGDIWDUIOHWOJWD', this._retrieveData()._55)
@@ -613,10 +528,10 @@ export default class loc extends React.Component {
             this.state.map.lon = position["coords"]["longitude"];
           }, err => console.log(err));
           let token = await AsyncStorage.getItem('token')
-          console.log("##############")
-          console.log(this.state.expertLevel)
-          console.log("##############")
-          await fetch("http://10.40.48.248:5000/findProviders", {
+          console.log("fuck" , typeof(this.state.expertLevel))
+          console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
+
+          fetch("http://10.40.48.248:5000/findProviders", {
             method: "POST",
             headers: {
               Accept: "application/json",
@@ -624,36 +539,28 @@ export default class loc extends React.Component {
               Authorization: "Bearer " + token
             },
             body: JSON.stringify({
-              
               lat: this.state.latitude,
               lon: this.state.longitude,
-              num_providers: 1,
-              expertLevel: this.state.expertLevel
+              num_providers: 2,
+              expertLevel: this.state.expertLevel,
+              description: this.state.description,
             }),
             
           })
             .then(response => response.text())
             .then(responseJson => {
               console.log("ghfhfh ", responseJson);
-              console.log(Object.keys(JSON.parse(responseJson)))
-
-              let jsonResponse = JSON.parse(responseJson)
-              let keys = Object.keys(JSON.parse(responseJson))
-
-              if (keys.includes('message'))
-                this.postM(jsonResponse.message)
-              
-              // if(responseJson.charAt(0) === 'U')
-              //   {
-              //     console.log('Tamaaaam')
-              //     this.postM(responseJson)
-              //   }
+              console.log(this.state.expertLevel)
+              if(responseJson.charAt(0) === 'U')
+                {
+                  console.log('Tamaaaam')
+                  this.postM(responseJson)
+                }
               else{
               var JSONres = JSON.parse(responseJson)
               this.state.requestID = JSONres.requestID;
-              // AsyncStorage.setItem("request_id", JSONres.requestID)
               console.log("THIS IS REQ ID: ", JSONres.requestID)
-    
+
               }
               
               
@@ -668,12 +575,7 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-      } catch (error) {
-          console.log(error);
-          console.log('aywaaa')
-        };
-
-        this.eventSource = new EventSource("http://10.40.48.248:5000/notifySeeker", {
+          this.eventSource = new EventSource("http://10.40.48.248:5000/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -681,23 +583,21 @@ export default class loc extends React.Component {
         }
       });
 
-      await this.eventSource.addEventListener("message", data => {
+      await this.eventSource.addEventListener("message", data =>{
         console.log(data.type); // message
         //if(data.type)
-        console.log("##############")
-        console.log("##############")
-        console.log(data.data)
-        console.log("##############")
-        console.log("##############")
         var res_str = data.data.slice(1); 
         var res_json = JSON.parse(res_str);
         console.log("This is the new output: ", res_json)
         //this.state.requestID = res_json.requestID;
         //console.log("THIS IS REQ ID: ", res_json.requestID)
         this.triggerAlert(res_json);
-        this.eventSource.close()
       });
 
+      } catch (error) {
+          console.log(error);
+          console.log('aywaaa')
+        };
       }
 
    render() {
@@ -750,11 +650,11 @@ export default class loc extends React.Component {
             </Button>
           </View>
         </Modal>
-          <Spinner
+          {/* <Spinner
             visible={this.state.spinner}
             textContent={'Finding near providers...'}
             textStyle={{color: '#FFF'}}
-            />
+            /> */}
            <Text style={{fontSize: 20, color: 'black', top: 75}}>Expert Level</Text>
            <Picker
               selectedValue={this.state.expertLevel}
@@ -768,7 +668,7 @@ export default class loc extends React.Component {
             </Picker>
           <TextInput style={styles.input} placeholder="Description" placeholderTextColor='black' onChangeText={(description) => this.setState({description})}
                 value={this.state.description}></TextInput>  
-          <Button full success style={styles.button} onPress={() => {this.postloc()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
+          <Button full style={styles.button} onPress={() => {this.postloc()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button>
           {/* <Button full success style={styles.button} onPress={() => {this.toggleRequestPage()}} ><Text style={{color:'#ffffff'}}>REQUEST</Text></Button> */}
        </View>
      );
@@ -887,7 +787,8 @@ export default class loc extends React.Component {
             <Button rounded style={{
                     alignSelf: 'flex-end',
                     alignItems: 'center',
-                    marginLeft:screenWidth*0.08
+                    marginLeft:screenWidth*0.03,
+                    backgroundColor: '42b3f4'
                   }}
                   onPress={this.sendMessage}
   
@@ -895,20 +796,22 @@ export default class loc extends React.Component {
               <Text>  Send Message   </Text>
             </Button>
   
-            <Button full rounded success style={{
+            <Button full rounded  style={{
                     alignSelf: 'flex-end',
                     alignItems: 'center',
-                    marginLeft:screenWidth*0.05
+                    marginLeft:screenWidth*0.03,
+                    backgroundColor: '2fa1e2'
                   }}
                   onPress={this.sendImage}
                   >
               <Text>   Send Image   </Text>
             </Button>
   
-            <Button full rounded danger style={{
+            <Button full rounded  style={{
                     alignSelf: 'flex-end',
                     alignItems: 'center',
-                    marginLeft:screenWidth*0.05
+                    marginLeft:screenWidth*0.03,
+                    backgroundColor: '2591ce'
                   }}
                   onPress={this.pickImage}
                   >
@@ -1068,7 +971,7 @@ export default class loc extends React.Component {
     alignItems: 'center',
     padding: 10,
     paddingBottom: 5,
-    //backgroundColor: '#1990e5',
+    backgroundColor: '#42b3f4',
     marginTop: 5,
     top: "95%",
     //left: 148.53
