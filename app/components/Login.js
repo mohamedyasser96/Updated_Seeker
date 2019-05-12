@@ -48,7 +48,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://10.40.48.248:5000/loginFacial', {
+        fetch('https://cocoabeans.herokuapp.com/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -122,7 +122,7 @@ export default class App extends Component {
       async register2()
       {
         try { 
-         let result = await fetch('http://10.40.48.248:5000/login/seeker', {
+         let result = await fetch('https://cocoabeans.herokuapp.com/login/seeker', {
          method: 'POST',
          headers: {
            Accept: 'application/json',
@@ -211,7 +211,7 @@ export default class App extends Component {
             <View style={styles.rect} />
             {/* <Text style={styles.text}>CocoaBeans' Seeker</Text> */}
             <Center horizontal>
-              <Image source={require("./2.png")} style={styles.image} />
+              <Image source={require("./logo.png")} style={styles.image} />
             </Center>
             {/* <Center horizontal> */}
               <TextInput style={styles.input} placeholder="Email" placeholderTextColor='black' onChangeText={(email) => this.setState({email})}
@@ -399,7 +399,7 @@ const styles = StyleSheet.create({
     height: 300,
     width: 300,
     position: "absolute",
-    top: "17.49%"
+    top: "20.49%"
   },
   input: {
     //position: "absolute",

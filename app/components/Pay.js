@@ -61,7 +61,7 @@ export default class AddPaymentForm extends React.Component {
           onPress: () => console.log('Cancel Pressed'),
           style: 'cancel',
         },
-        {text: 'OK', onPress: () => console.log('OK Pressed')},
+        {text: 'OK', onPress: () => this.props.navigation.navigate("Second")},
       ],
       {cancelable: false},
     );
@@ -176,7 +176,7 @@ export default class AddPaymentForm extends React.Component {
        this.setC()
        this.DataObject = this.setData()
       //  console.log("THIS IS MY TOKEN", this._retrieveData())
-       let result = await fetch('http://10.40.48.248:5000/purchase', {
+       let result = await fetch('https://cocoabeans.herokuapp.com/purchase', {
        method: 'POST',
        headers: {
          Accept: 'application/json',

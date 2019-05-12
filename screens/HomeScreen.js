@@ -67,7 +67,7 @@ export default class loc extends React.Component {
             OnReuqest: false,
             requestID: '',
             RatingScreen: false,
-            starCount: 2.5,
+            starCount: 5,
             comment : "" ,
             provEmail: "",
             base64Image: '',
@@ -102,7 +102,7 @@ export default class loc extends React.Component {
 
     handlePress= ()=> {
       console.log("Key Pressed " + this.state.comment + " "+ this.state.starCount) 
-      fetch("http://10.40.48.248:5000/rate", {
+      fetch("https://cocoabeans.herokuapp.com/rate", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -151,7 +151,7 @@ export default class loc extends React.Component {
 
     async on_connect(emails){
 
-      var socket = new SockJS('http://10.40.48.248:5000/chat');
+      var socket = new SockJS('https://cocoabeans.herokuapp.com/chat');
       stompClient = Stomp.over(socket);  
 
       let email =  await AsyncStorage.getItem('email');
@@ -345,7 +345,7 @@ export default class loc extends React.Component {
     //   // console.log("ind", this.global_ind);
     //   let token = await AsyncStorage.getItem("token");
     //   let sEmail = await AsyncStorage.getItem('email');
-    //   fetch("http://10.40.48.248:5000/acceptProviders", {
+    //   fetch("https://cocoabeans.herokuapp.com/acceptProviders", {
     //     method: "POST",
     //     headers: {
     //       Accept: "application/json",
@@ -377,7 +377,7 @@ export default class loc extends React.Component {
     //     });
 
 
-    //     this.eventSource = new EventSource("http://10.40.48.248:5000/requestCancelled", {
+    //     this.eventSource = new EventSource("https://cocoabeans.herokuapp.com/requestCancelled", {
     //     headers: {
     //       Accept: "application/json",
     //       "Content-Type": "application/json",
@@ -402,7 +402,7 @@ export default class loc extends React.Component {
     //   });
 
 
-    //     this.eventSource = new EventSource("http://10.40.48.248:5000/endRequest", {
+    //     this.eventSource = new EventSource("https://cocoabeans.herokuapp.com/endRequest", {
     //     headers: {
     //       Accept: "application/json",
     //       "Content-Type": "application/json",
@@ -436,8 +436,10 @@ export default class loc extends React.Component {
       console.log("This is item: ", item);
 
       provInfo.uname = item.username,
-      provInfo.mobileNum = item.mobileNum,
-      provInfo.eta = item.eta
+      provInfo.phoneNum = item.mobileNum,
+      console.log("BBBBBBB")
+      provInfo.eta = item.eta.toString().substring(0,4) 
+      
 
       console.log("This is prov: ", provInfo)
       
@@ -445,7 +447,7 @@ export default class loc extends React.Component {
 
       // console.log("ind", this.global_ind);
       let token = await AsyncStorage.getItem("token");
-      await fetch("http://10.40.48.248:5000/acceptProviders", {
+      await fetch("https://cocoabeans.herokuapp.com/acceptProviders", {
         method: "POST",
         headers: {
           Accept: "application/json",
@@ -476,7 +478,7 @@ export default class loc extends React.Component {
         });
 
 
-        this.eventSourceCancel = await new EventSource("http://10.40.48.248:5000/requestCancelled", {
+        this.eventSourceCancel = await new EventSource("https://cocoabeans.herokuapp.com/requestCancelled", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -502,7 +504,7 @@ export default class loc extends React.Component {
       });
 
 
-        this.eventSourceEnd = await new EventSource("http://10.40.48.248:5000/endRequest", {
+        this.eventSourceEnd = await new EventSource("https://cocoabeans.herokuapp.com/endRequest", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -547,7 +549,7 @@ export default class loc extends React.Component {
           console.log("fuck" , typeof(this.state.expertLevel))
           console.log("sex" , typeof(parseInt(this.state.expertLevel,10)))
 
-          fetch("http://10.40.48.248:5000/findProviders", {
+          fetch("https://cocoabeans.herokuapp.com/findProviders", {
             method: "POST",
             headers: {
               Accept: "application/json",
@@ -557,7 +559,7 @@ export default class loc extends React.Component {
             body: JSON.stringify({
               lat: this.state.latitude,
               lon: this.state.longitude,
-              num_providers: 2,
+              num_providers: 3,
               expertLevel: this.state.expertLevel,
               description: this.state.description,
             }),
@@ -565,15 +567,17 @@ export default class loc extends React.Component {
           })
             .then(response => response.text())
             .then(responseJson => {
-              console.log("ghfhfh ", responseJson);
-              console.log(this.state.expertLevel)
-              if(responseJson.charAt(0) === 'U')
+              var JSONres = JSON.parse(responseJson)
+              console.log("shgshgfsdg ", typeof(JSONres));
+              console.log("ghfhfh ", JSONres);
+              console.log(JSONres.message)
+              if(JSONres.message.charAt(0) === 'U')
                 {
                   console.log('Tamaaaam')
-                  this.postM(responseJson)
+                  this.postM(JSONres.message)
                 }
               else{
-              var JSONres = JSON.parse(responseJson)
+              
               this.state.requestID = JSONres.requestID;
               console.log("THIS IS REQ ID: ", JSONres.requestID)
 
@@ -591,7 +595,7 @@ export default class loc extends React.Component {
               console.error(error);
           });
 
-          this.eventSource = await new EventSource("http://10.40.48.248:5000/notifySeeker", {
+          this.eventSource = await new EventSource("https://cocoabeans.herokuapp.com/notifySeeker", {
         headers: {
           Accept: "application/json",
           "Content-Type": "application/json",
@@ -671,10 +675,10 @@ export default class loc extends React.Component {
             textContent={'Finding near providers...'}
             textStyle={{color: '#FFF'}}
             /> */}
-           <Text style={{fontSize: 20, color: 'black', top: 75}}>Expert Level</Text>
+           <Text style={{fontSize: 20, color: 'black', top: '1%'}}>Expert Level</Text>
            <Picker
               selectedValue={this.state.expertLevel}
-              style={{height: 50, width: 100, paddingTop: 5, top: 80}}
+              style={{height: 50, width: 100, paddingTop: 5, top: '5%'}}
               onValueChange={(itemValue, itemIndex) =>
                 this.setState({expertLevel: itemValue})
               }>
@@ -757,6 +761,9 @@ export default class loc extends React.Component {
                         <Marker coordinate={this.state} />
                         <Marker coordinate={this.provs} pinColor='#417df4'/>
                   </MapView>
+                  <Text style={{fontSize: 15, color: 'black', top: '80%', fontWeight: 'bold'}}>{"Username: " + provInfo.uname}</Text>
+                  <Text style={{fontSize: 15, color: 'black', top: '83%', fontWeight: 'bold'}}>{"ETA: " + provInfo.eta + " Minutes"}</Text>
+                  <Text style={{fontSize: 15, color: 'black', top: '85%', fontWeight: 'bold'}}>{"Mobile: " + provInfo.phoneNum}</Text>
                   {/* <Text style={{fontSize: 20, color: 'black', top: '50%'}}>On Request</Text> */}
                 {/* <Button full success style={styles.button} onPress={() => {this.change()}} ><Text style={{color:'#ffffff'}}>CHAT</Text></Button>
                 <Button full success style={styles.button} onPress={() => {this._toggleModal()}} ><Text style={{color:'#ffffff'}}>CANCEL</Text></Button> */}
@@ -798,7 +805,7 @@ export default class loc extends React.Component {
         <View>
           
           <ScrollView style={{position: 'absolute',
-            top: 10,
+            top: 25,
             width: '100%',
             height: '70%',}}>
             { 
@@ -816,7 +823,7 @@ export default class loc extends React.Component {
             }
           </ScrollView>
           <TextInput
-                style={[styles.default, {marginTop:screenHeight*0.65 ,height: Math.max(35, this.state.height)}]}
+                style={[styles.default, {marginTop:screenHeight*0.75 ,height: Math.max(35, this.state.height)}]}
                 placeholder="Message"
                 value={this.state.mess}
                 onChangeText={(text) => this.setState({mess:text})}
@@ -962,7 +969,7 @@ export default class loc extends React.Component {
   },
   map2: {
     ...StyleSheet.absoluteFillObject,
-    height: 500,
+    height: 550,
   },
   input: {
     //position: "absolute",

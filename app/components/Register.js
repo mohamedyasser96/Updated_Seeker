@@ -69,7 +69,7 @@ export default class App extends Component {
 
     async register2(){
      try { 
-      let result = await fetch('http://10.40.48.248:5000/register/seeker', {
+      let result = await fetch('https://cocoabeans.herokuapp.com/register/seeker', {
       method: 'POST',
       headers: {
         Accept: 'application/json',
@@ -102,7 +102,7 @@ export default class App extends Component {
 
           console.log("In reg face: ", data)
 
-        fetch('http://10.40.48.248:5000/saveImage', {
+        fetch('https://cocoabeans.herokuapp.com/saveImage', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
@@ -136,7 +136,7 @@ export default class App extends Component {
 
           let data = await this.camera.takePictureAsync(options)
 
-        fetch('http://10.40.48.248:5000/loginFacial', {
+        fetch('https://cocoabeans.herokuapp.com/loginFacial', {
             method: 'POST',
             headers: {
               Accept: 'application/json',
